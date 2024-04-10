@@ -5,7 +5,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
@@ -26,8 +25,6 @@ public class ModifyingVisitorComplete {
         numericLiteralVisitor.visit(cu, null);
 
         System.out.println(cu.toString());
-
-//        System.out.printf(formatWithUnderscores("1_0_0_0"));
     }
 
     private static class IntegerLiteralModifier extends ModifierVisitor<Void> {
