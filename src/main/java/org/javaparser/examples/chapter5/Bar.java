@@ -13,6 +13,19 @@ class Bar {
     }
 
     void bMethod(){
-        System.out.printf("");
+        A a2 = new A();
+        a2.foo("PP");
+    }
+
+    Integer cMethod(){
+        return 1;
     }
 }
+ class B2{
+
+    int testInt(){
+        Bar bar = new Bar();
+        return bar.cMethod().compareTo(0);
+    }
+
+ }

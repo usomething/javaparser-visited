@@ -5,6 +5,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -30,7 +31,24 @@ public class GetTypeOfReference {
 
         CompilationUnit cu = StaticJavaParser.parse(new File(FILE_PATH));
 
-        cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci->{
+        //获取一个文件中的类名
+        cu.getChildNodes().stream().filter(n->n.getClass().equals(ClassOrInterfaceDeclaration.class)).forEach(n->{
+            ClassOrInterfaceDeclaration ci = (ClassOrInterfaceDeclaration) n;
+            System.out.println(ci.getFullyQualifiedName().get());
+
+            ci.findAll(MethodDeclaration.class).forEach(md->{
+                System.out.println(md.getNameAsString());
+
+                md.findAll(MethodCallExpr.class).forEach(me->{
+                    boolean scopeExist = me.getScope().isPresent();
+                    System.out.println(" -> "+(scopeExist?me.getScope().get()+".":"this.")+me.getNameAsString());
+                });
+
+            });
+
+        });
+
+        /*cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci->{
             String clazzName = ci.getNameAsString();
             ci.findAll(MethodDeclaration.class).forEach(md->{
                 String name = md.getNameAsString();
@@ -41,7 +59,7 @@ public class GetTypeOfReference {
                     });
                 }
             });
-        });
+        });*/
 
 
         /*cu.findAll(MethodDeclaration.class).forEach(md ->{
