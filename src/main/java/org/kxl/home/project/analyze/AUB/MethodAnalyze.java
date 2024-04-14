@@ -3,10 +3,7 @@ package org.kxl.home.project.analyze.AUB;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.AnnotationDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.EnumDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
@@ -18,9 +15,7 @@ import org.kxl.home.util.FileUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MethodAnalyze {
@@ -94,11 +89,19 @@ public class MethodAnalyze {
             contents.add(desc.printString());
         }
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods.txt", contents, true);
-
         contents.clear();
+        String sqlInsert = "insert into autopart_method_call (class_name, method_name, call_method,call_class_method,project_name) values";
+        int c = 0;
+        List<String> sqlPart = new ArrayList<>();
         for (ClassDesc desc : classDescs) {
+            ++c;
             contents.add(desc.printString());
-            sqls.addAll(desc.generateSQLs("checkout"));
+
+            sqlPart.addAll(desc.generateSQLs("checkout"));
+            if (sqlPart.size() >= 5000 || c == classDescs.size()) {
+                sqls.add(String.format("%s %s;", sqlInsert, String.join(",", sqlPart)));
+                sqlPart.clear();
+            }
         }
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods2.txt", contents, true);
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/sql.txt", sqls, true);
@@ -109,6 +112,7 @@ public class MethodAnalyze {
         String className = ci.getFullyQualifiedName().get();
         ClassDesc cd = new ClassDesc(className);
         List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
+        Map<String, String> filedTypeMap = parseVariables(ci);
         boolean scopeExist = false;
         for (MethodDeclaration md : methods) {
             List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
@@ -120,17 +124,38 @@ public class MethodAnalyze {
                 scopeExist = mce.getScope().isPresent();
                 if (scopeExist) {
                     desc.addCalledMethod(new ClassCallDesc(mce.getScope().get().toString(), mce.getNameAsString()));
-                    mdsc.addCallDesc(mce.getScope().get().toString() + "." + mce.getNameAsString());
+                    String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();
+                    mdsc.addCallDesc(rawMethod);
+                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);
                 } else {
                     desc.addCalledMethod(new ClassCallDesc("this", mce.getNameAsString()));
-                    mdsc.addCallDesc("this." + mce.getNameAsString());
+                    String rawMethod = "this." + mce.getNameAsString();
+                    mdsc.addCallDesc(rawMethod);
+                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);
                 }
             }
-
             descs.add(desc);
-
         }
-
         return new Pair<>(descs, cd);
     }
+
+    private final static Map<String, String> EMPTY = new HashMap<>();
+
+    private static Map<String, String> parseVariables(ClassOrInterfaceDeclaration ci) {
+        List<FieldDeclaration> vars = ci.findAll(FieldDeclaration.class).stream().collect(Collectors.toList());
+        if (vars == null || vars.isEmpty()) {
+            return EMPTY;
+        }
+        Map<String, String> ret = new HashMap<>();
+        for (FieldDeclaration fd : vars) {
+            List<VariableDeclarator> vds = fd.getVariables();
+            for (VariableDeclarator vd : vds) {
+                ret.put(vd.getNameAsString(), vd.getTypeAsString());
+            }
+        }
+        return ret;
+
+
+    }
+
 }

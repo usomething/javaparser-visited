@@ -44,10 +44,10 @@ public class ClassDesc {
         List<String> sqls = new java.util.ArrayList<>();
         if (methodDescs != null && methodDescs.size() > 0) {
             for (MethodDesc desc : methodDescs) {
-                sqls.add(desc.generateSQLs(className, projectName));
+                sqls.addAll(desc.generateSQLs(className, projectName));
             }
         } else {
-            sqls.add(String.format("insert into autopart_method_call (class_name, method_name, call_method,project_name) values ('%s','','','%s');\r\n", className, projectName));
+            sqls.add(String.format("('%s','','','','%s')", className, projectName));
         }
         return sqls;
     }

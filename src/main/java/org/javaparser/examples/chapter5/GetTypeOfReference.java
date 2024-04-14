@@ -3,6 +3,7 @@ package org.javaparser.examples.chapter5;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -31,6 +32,16 @@ public class GetTypeOfReference {
 
         CompilationUnit cu = StaticJavaParser.parse(new File(FILE_PATH));
 
+        cu.findAll(ClassOrInterfaceDeclaration.class).forEach(cd -> {
+            cd.getExtendedTypes().forEach(et -> System.out.println(et.getTypeArguments().get()));
+        });
+
+       /* cu.findAll(FieldDeclaration.class).forEach(fd -> {
+            System.out.println(fd.getVariables().get(0).getTypeAsString() + " -> " + fd.getVariables().get(0).getNameAsString());
+        });
+
+        System.out.println("-----------------------------");
+
         //获取一个文件中的类名
         cu.getChildNodes().stream().filter(n -> n.getClass().equals(ClassOrInterfaceDeclaration.class)).forEach(n -> {
             ClassOrInterfaceDeclaration ci = (ClassOrInterfaceDeclaration) n;
@@ -46,7 +57,7 @@ public class GetTypeOfReference {
 
             });
 
-        });
+        });*/
 
         /*cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci->{
             String clazzName = ci.getNameAsString();

@@ -2,7 +2,10 @@ package org.kxl.home.project.analyze;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class MethodDesc {
@@ -10,6 +13,8 @@ public class MethodDesc {
     private String methodName;
 
     private List<String> callDescs;
+
+    private List<CallMethodDesc> callMethodDescs;
 
     public MethodDesc(String methodName) {
         this.methodName = methodName;
@@ -22,21 +27,24 @@ public class MethodDesc {
         callDescs.add(callDesc);
     }
 
-    public String generateSQLs(String className, String projectName) {
+    public void addCallMethodDescs(String callDesc, Map<String, String> fieldTypeMap, String className) {
+        if (callMethodDescs == null) {
+            callMethodDescs = new java.util.ArrayList<>();
+        }
+        CallMethodDesc callMethodDesc = new CallMethodDesc(callDesc);
+        callMethodDesc.parseClassMethod(className, fieldTypeMap);
+        callMethodDescs.add(callMethodDesc);
+    }
+
+    public List<String> generateSQLs(String className, String projectName) {
         if (callDescs == null || callDescs.size() == 0) {
-            return String.format("insert into autopart_method_call (class_name, method_name, call_method,project_name) values ('%s','%s','','%s');\r\n", className, methodName, projectName);
+            return Arrays.asList(String.format("('%s','%s','','','%s')", className, methodName, projectName));
         }
-        String format = "insert into autopart_method_call (class_name, method_name, call_method,project_name) values\r\n";
-        int i = 0;
-        for (String callDesc : callDescs) {
-            ++i;
-            format += String.format("('%s','%s','%s','%s')", className, methodName, callDesc.replace("'", "\\'"), projectName);
-            if (i < callDescs.size()) {
-                format += ",\r\n";
-            } else {
-                format += ";\r\n";
-            }
+//        String format = "insert into autopart_method_call (class_name, method_name, call_method,call_class_method,call_class_method,project_name) values";
+        List<String> ret = new ArrayList<>();
+        for (CallMethodDesc callDesc : callMethodDescs) {
+            ret.add(String.format("('%s','%s','%s','%s','%s')", className, methodName, callDesc.getRawMethod().replace("'", "\\'"), callDesc.getClassMethod(), projectName));
         }
-        return format;
+        return ret;
     }
 }

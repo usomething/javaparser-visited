@@ -1,8 +1,17 @@
 package org.javaparser.examples.chapter5;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+
 class Bar {
 
-    private String a;
+    private String a, c;
+
+    private Integer i;
+
+    private BigDecimal d;
+
+    private A a1;
 
     void aMethod() {
         bMethod();
@@ -12,20 +21,21 @@ class Bar {
         }
     }
 
-    void bMethod(){
+    void bMethod() {
         A a2 = new A();
         a2.foo("PP");
     }
 
-    Integer cMethod(){
+    Integer cMethod() {
         return 1;
     }
 }
- class B2{
 
-    int testInt(){
+class B2 extends ArrayList<Integer> {
+
+    int testInt() {
         Bar bar = new Bar();
         return bar.cMethod().compareTo(0);
     }
 
- }
+}
