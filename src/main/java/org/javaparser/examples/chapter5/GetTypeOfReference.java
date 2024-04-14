@@ -32,16 +32,16 @@ public class GetTypeOfReference {
         CompilationUnit cu = StaticJavaParser.parse(new File(FILE_PATH));
 
         //获取一个文件中的类名
-        cu.getChildNodes().stream().filter(n->n.getClass().equals(ClassOrInterfaceDeclaration.class)).forEach(n->{
+        cu.getChildNodes().stream().filter(n -> n.getClass().equals(ClassOrInterfaceDeclaration.class)).forEach(n -> {
             ClassOrInterfaceDeclaration ci = (ClassOrInterfaceDeclaration) n;
             System.out.println(ci.getFullyQualifiedName().get());
 
-            ci.findAll(MethodDeclaration.class).forEach(md->{
+            ci.findAll(MethodDeclaration.class).forEach(md -> {
                 System.out.println(md.getNameAsString());
 
-                md.findAll(MethodCallExpr.class).forEach(me->{
+                md.findAll(MethodCallExpr.class).forEach(me -> {
                     boolean scopeExist = me.getScope().isPresent();
-                    System.out.println(" -> "+(scopeExist?me.getScope().get()+".":"this.")+me.getNameAsString());
+                    System.out.println(" -> " + (scopeExist ? me.getScope().get().toString() + "." : "this.") + me.getNameAsString());
                 });
 
             });
