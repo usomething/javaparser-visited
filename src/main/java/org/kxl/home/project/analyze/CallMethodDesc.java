@@ -27,7 +27,7 @@ public class CallMethodDesc {
 
     public void parseClassMethod(String className, Map<String, String> fieldTypeMap) {
         if (fieldTypeMap == null || fieldTypeMap.isEmpty()) return;
-        Boolean find = false;
+        boolean find = false;
         for (Map.Entry<String, String> me : fieldTypeMap.entrySet()) {
             String varName = me.getKey();
             String varType = me.getValue();
@@ -51,10 +51,17 @@ public class CallMethodDesc {
         }
         if (!find) {
             if (rawMethod.startsWith("this.")) {
-                classMethod = className.substring(className.lastIndexOf(".") + 1) + ".";
-                String next = rawMethod.substring(rawMethod.indexOf(".", 5) + 1);
-                int minEnd = getMinEnd(next);
-                classMethod += next.substring(0, minEnd);
+                if (rawMethod.startsWith("this.repository")) {
+                    
+                } else if (rawMethod.startsWith("this.service")) {
+
+                } else {
+                    //把this替换成本类
+                    classMethod = className.substring(className.lastIndexOf(".") + 1) + ".";
+                    String next = rawMethod.substring(rawMethod.indexOf(".", 5) + 1);
+                    int minEnd = getMinEnd(next);
+                    classMethod += next.substring(0, minEnd);
+                }
             }
         }
     }

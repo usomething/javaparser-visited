@@ -2,8 +2,9 @@ package org.javaparser.examples.chapter5;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-class Bar {
+class Bar extends HashMap<Double, Float> {
 
     private String a, c;
 
@@ -31,11 +32,12 @@ class Bar {
     }
 }
 
-class B2 extends ArrayList<Integer> {
+/*
+class B2 extends HashMap<Integer, String> {
 
     int testInt() {
         Bar bar = new Bar();
         return bar.cMethod().compareTo(0);
     }
 
-}
+}*/

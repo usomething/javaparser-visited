@@ -14,7 +14,6 @@ import org.kxl.home.project.analyze.MethodDesc;
 import org.kxl.home.util.FileUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,23 +138,27 @@ public class MethodAnalyze {
         return new Pair<>(descs, cd);
     }
 
-    private final static Map<String, String> EMPTY = new HashMap<>();
-
     private static Map<String, String> parseVariables(ClassOrInterfaceDeclaration ci) {
-        List<FieldDeclaration> vars = ci.findAll(FieldDeclaration.class).stream().collect(Collectors.toList());
-        if (vars == null || vars.isEmpty()) {
-            return EMPTY;
-        }
         Map<String, String> ret = new HashMap<>();
-        for (FieldDeclaration fd : vars) {
-            List<VariableDeclarator> vds = fd.getVariables();
-            for (VariableDeclarator vd : vds) {
-                ret.put(vd.getNameAsString(), vd.getTypeAsString());
+        List<FieldDeclaration> vars = ci.findAll(FieldDeclaration.class).stream().collect(Collectors.toList());
+        if (vars != null && !vars.isEmpty()) {
+            for (FieldDeclaration fd : vars) {
+                List<VariableDeclarator> vds = fd.getVariables();
+                for (VariableDeclarator vd : vds) {
+                    ret.put(vd.getNameAsString(), vd.getTypeAsString());
+                }
             }
         }
+
+        Map<String, String> repositoryMap = ServiceRepositoryParser.parse(ci);
+        if (repositoryMap != null && !repositoryMap.isEmpty()) {
+            ret.putAll(repositoryMap);
+        }
+
+        Map<String, String> serviceMap = ControllerServiceParser.parse(ci);
+        if (serviceMap != null && !serviceMap.isEmpty()) {
+            ret.putAll(serviceMap);
+        }
         return ret;
-
-
     }
-
 }
