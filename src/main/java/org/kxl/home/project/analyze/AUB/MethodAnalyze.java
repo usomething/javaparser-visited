@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/AutobestCheckout/src/main/java";
+    private final static String root = "C:/workspace/AutoBestChina/src/main/java";
 
     private static CompilationUnit cu = null;
 
@@ -78,7 +78,7 @@ public class MethodAnalyze {
                 }
             }
             if (!(chilNodes.size() == 1 && Objects.equals(fileName.replace("\\", ".").replace(".java", ""), className))) {
-                System.err.println(fileName + "not match");
+                System.err.println(fileName + " not match");
             }
         }
 
@@ -96,7 +96,7 @@ public class MethodAnalyze {
             ++c;
             contents.add(desc.printString());
 
-            sqlPart.addAll(desc.generateSQLs("checkout"));
+            sqlPart.addAll(desc.generateSQLs("oe-admin"));
             if (sqlPart.size() >= 5000 || c == classDescs.size()) {
                 sqls.add(String.format("%s %s;", sqlInsert, String.join(",", sqlPart)));
                 sqlPart.clear();

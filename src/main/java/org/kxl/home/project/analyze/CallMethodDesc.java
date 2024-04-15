@@ -42,6 +42,9 @@ public class CallMethodDesc {
             Matcher m = p.matcher(rawMethod);
             if (find = m.find()) {
                 classMethod = varType + ".";
+                if (m.end() + 1 >= rawMethod.length()) {
+                    continue;//可能找到内部中有一个匹配，但是超出了substring范围，说明找到的一定错误，直接忽略
+                }
                 String next = rawMethod.substring(m.end() + 1);
                 int minEnd = getMinEnd(next);
                 classMethod += next.substring(0, minEnd);
@@ -52,7 +55,7 @@ public class CallMethodDesc {
         if (!find) {
             if (rawMethod.startsWith("this.")) {
                 if (rawMethod.startsWith("this.repository")) {
-                    
+
                 } else if (rawMethod.startsWith("this.service")) {
 
                 } else {
