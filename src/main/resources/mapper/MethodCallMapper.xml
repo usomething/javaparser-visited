@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+            PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+            "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.kxl.home.project.mapper.MethodCallMapper">
+    
+    <resultMap id="methodCall" type="org.kxl.home.project.entity.MethodCall">
+        <result property="id" column="id"/>
+        <result property="className" column="class_name"/>
+        <result property="methodName" column="method_name"/>
+        <result property="callMethod" column="call_method"/>
+        <result property="callClassMethod" column="call_class_method"/>
+        <result property="projectName" column="project_name"/>
+
+    </resultMap>
+    
+    <select id="findByCallClassMethodAndProjectName" resultMap="methodCall">
+        select * from autopart_method_call c where c.call_class_method like "%"#{callDesc} and project_name=#{projectName}
+    </select>
+</mapper>
