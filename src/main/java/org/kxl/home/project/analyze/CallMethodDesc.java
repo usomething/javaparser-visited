@@ -61,7 +61,8 @@ public class CallMethodDesc {
                 } else {
                     //把this替换成本类
                     classMethod = className.substring(className.lastIndexOf(".") + 1) + ".";
-                    String next = rawMethod.substring(rawMethod.indexOf(".", 5) + 1);
+                    //这里把this. 替换掉
+                    String next = rawMethod.replace("this.","");//rawMethod.substring(rawMethod.indexOf(".", 5) + 1);
                     int minEnd = getMinEnd(next);
                     classMethod += next.substring(0, minEnd);
                 }
