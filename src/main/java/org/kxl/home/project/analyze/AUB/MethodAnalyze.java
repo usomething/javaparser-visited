@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/AutoBestChina/src/main/java";
+    private final static String root = "C:/workspace/OE/AutobestCheckout/src/main/java";
+    private final static String projectName = root.contains("AutoBestChina")?"oe-admin":root.contains("AutobestCheckout")?"oe-online":"unknow";
 
     private static CompilationUnit cu = null;
 
@@ -96,7 +97,7 @@ public class MethodAnalyze {
             ++c;
             contents.add(desc.printString());
 
-            sqlPart.addAll(desc.generateSQLs("oe-admin"));
+            sqlPart.addAll(desc.generateSQLs(projectName));
             if (sqlPart.size() >= 5000 || c == classDescs.size()) {
                 sqls.add(String.format("%s %s;", sqlInsert, String.join(",", sqlPart)));
                 sqlPart.clear();
