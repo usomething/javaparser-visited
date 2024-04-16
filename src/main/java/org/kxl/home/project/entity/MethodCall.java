@@ -17,4 +17,8 @@ public class MethodCall {
 
     private String projectName;
 
+    public String getCaller(){
+        return className.substring(className.lastIndexOf(".")+1)+"."+methodName;
+    }
+
 }
