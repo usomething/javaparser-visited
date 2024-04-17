@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class CallMethodDesc {
 
     //原始方法调用表达式
-    private String rawMethod;
+    private String rawMethod;//PS 这里很难带上签名
 
     //类方法调用表达式
     private String classMethod = "";
@@ -62,9 +62,9 @@ public class CallMethodDesc {
                     //把this替换成本类
                     classMethod = className.substring(className.lastIndexOf(".") + 1) + ".";
                     //这里把this. 替换掉
-                    String next = rawMethod.replace("this.","");//rawMethod.substring(rawMethod.indexOf(".", 5) + 1);
-                    int minEnd = getMinEnd(next);
-                    classMethod += next.substring(0, minEnd);
+                    String methodSignature = rawMethod.replace("this.", "");//rawMethod.substring(rawMethod.indexOf(".", 5) + 1);
+                    int minEnd = getMinEnd(methodSignature);
+                    classMethod += methodSignature.substring(0, minEnd);
                 }
             }
         }

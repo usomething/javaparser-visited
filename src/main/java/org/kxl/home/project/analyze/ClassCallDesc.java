@@ -17,10 +17,23 @@ public class ClassCallDesc {
 
     private List<ClassCallDesc> calledMethods;
 
-    public ClassCallDesc(String className, String methodName) {
+    public ClassCallDesc(String className, String methodName, Integer paramCount, String paramTypes) {
         this.className = className;
         this.methodName = methodName;
+        this.paramCount = paramCount;
+        this.paramTypes = paramTypes;
     }
+
+    public ClassCallDesc(String className, String methodName, Integer paramCount) {
+        this.className = className;
+        this.methodName = methodName;
+        this.paramCount = paramCount;
+    }
+
+    /*public ClassCallDesc(String className, String methodName) {
+        this.className = className;
+        this.methodName = methodName;
+    }*/
 
     public void addCalledMethod(ClassCallDesc calledMethod) {
         if (calledMethods == null) {
@@ -30,7 +43,7 @@ public class ClassCallDesc {
     }
 
     public String printString() {
-        String str = String.format("%s.%s", className, methodName);
+        String str = String.format("%s.%s(%s)", className, methodName, paramTypes);
         if (calledMethods != null) {
             str += " -> ";
             for (ClassCallDesc desc : calledMethods) {

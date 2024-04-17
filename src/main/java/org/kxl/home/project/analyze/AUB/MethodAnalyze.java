@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/OE/AutobestCheckout/src/main/java";
-    private final static String projectName = root.contains("AutoBestChina")?"oe-admin":root.contains("AutobestCheckout")?"oe-online":"unknow";
+    private final static String root = "C:/workspace/AutoBestChina/src/main/java";
+    private final static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
     private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
 
@@ -92,7 +92,7 @@ public class MethodAnalyze {
         }
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods.txt", contents, true);
         contents.clear();
-        String sqlInsert = "insert into autopart_method_call (class_name, method_name, call_method,call_class_method,project_name) values";
+        String sqlInsert = "insert into autopart_method_call (class_name, method_name, method_param_count, method_param_type, call_method,call_class_method,project_name) values";
         int c = 0;
         List<String> sqlPart = new ArrayList<>();
         for (ClassDesc desc : classDescs) {
@@ -119,27 +119,31 @@ public class MethodAnalyze {
         Set<String> duplicateMethodName = new HashSet<>();
         for (MethodDeclaration md : methods) {
             List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
-            String method = md.getNameAsString();//TODO 这里要方法签名
-            if(SHOW_DUPLICATED_METHOD_NAME) {
-                if(duplicateMethodName.contains(method)){
-                    System.out.println(className + "." + method);
-                }else{
-                    duplicateMethodName.add(method);
+            List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
+            String paramSignature = String.join(",", paramList);
+            String method = md.getNameAsString();//DONE 这里要方法签名
+            if (SHOW_DUPLICATED_METHOD_NAME) {
+                String methodSignature = className + "." + method + "(" + paramSignature + ")";
+                if (duplicateMethodName.contains(methodSignature)) {
+                    System.out.println(methodSignature);
+                } else {
+                    duplicateMethodName.add(methodSignature);
                 }
             }
             duplicateMethodName.add(method);
-            ClassCallDesc desc = new ClassCallDesc(className, method);
-            MethodDesc mdsc = new MethodDesc(method);
+            ClassCallDesc desc = new ClassCallDesc(className, method, paramList.size(), paramSignature);
+            MethodDesc mdsc = new MethodDesc(method, paramList.size(), paramSignature);
             cd.addMethodDesc(mdsc);
             for (MethodCallExpr mce : methodCallExprs) {
                 scopeExist = mce.getScope().isPresent();
+                Integer paramCount = mce.getArguments().size();
                 if (scopeExist) {
-                    desc.addCalledMethod(new ClassCallDesc(mce.getScope().get().toString(), mce.getNameAsString()));
+                    desc.addCalledMethod(new ClassCallDesc(mce.getScope().get().toString(), mce.getNameAsString(), paramCount));
                     String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
                     mdsc.addCallDesc(rawMethod);
                     mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);
                 } else {
-                    desc.addCalledMethod(new ClassCallDesc("this", mce.getNameAsString()));
+                    desc.addCalledMethod(new ClassCallDesc("this", mce.getNameAsString(), paramCount));
                     String rawMethod = "this." + mce.getNameAsString();
                     mdsc.addCallDesc(rawMethod);
                     mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);

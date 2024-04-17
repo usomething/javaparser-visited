@@ -47,7 +47,7 @@ public class ClassDesc {
                 sqls.addAll(desc.generateSQLs(className, projectName));
             }
         } else {
-            sqls.add(String.format("('%s','','','','%s')", className, projectName));
+            sqls.add(String.format("('%s','',0,'','','','%s')", className, projectName));
         }
         return sqls;
     }
