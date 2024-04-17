@@ -14,7 +14,7 @@ class Bar extends HashMap<Double, Float> {
 
     private A a1;
 
-    void aMethod() {
+    void aMethod(String s1,Integer i1,boolean b1,long l1) {
         bMethod();
         while (true) {
             int a = 0;

@@ -36,6 +36,14 @@ public class GetTypeOfReference {
         CompilationUnit cu = StaticJavaParser.parse(new File(FILE_PATH));
 
         cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci -> {
+            ci.findAll(MethodDeclaration.class).forEach(md -> {
+                String param = String.join(",",md.getParameters().stream().map(p->p.getType().asString()).collect(Collectors.toList()));
+                System.out.println(md.getNameAsString()+"("+param+")");
+            });
+        });
+
+
+        /*cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci -> {
             ci.getExtendedTypes().forEach(t -> {
                 NodeList<Type> typesList = t.getTypeArguments().orElse(null);
                 if (typesList != null) {
@@ -44,7 +52,7 @@ public class GetTypeOfReference {
                     });
                 }
             });
-        });
+        });*/
 
 
 
