@@ -8,8 +8,12 @@
         <result property="id" column="id"/>
         <result property="className" column="class_name"/>
         <result property="methodName" column="method_name"/>
+        <result property="methodParamCount" column="method_param_count"/>
+        <result property="methodParamType" column="method_param_type"/>
         <result property="callMethod" column="call_method"/>
         <result property="callClassMethod" column="call_class_method"/>
+        <result property="callMethodParamCount" column="call_method_param_count"/>
+        <result property="callMethodParamType" column="call_method_param_type"/>
         <result property="projectName" column="project_name"/>
 
     </resultMap>
