@@ -15,14 +15,14 @@ class Bar extends HashMap<Double, Float> {
     private A a1;
 
     void aMethod(String s1,Integer i1,boolean b1,long l1) {
-        bMethod();
+        bMethod(BigDecimal.ONE,a1);
         while (true) {
             int a = 0;
             a = a + 1;
         }
     }
 
-    void bMethod() {
+    void bMethod(BigDecimal bd, A a) {
         A a2 = new A();
         a2.foo("PP");
     }
