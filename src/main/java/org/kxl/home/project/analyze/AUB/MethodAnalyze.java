@@ -22,6 +22,8 @@ public class MethodAnalyze {
     private final static String root = "C:/workspace/OE/AutobestCheckout/src/main/java";
     private final static String projectName = root.contains("AutoBestChina")?"oe-admin":root.contains("AutobestCheckout")?"oe-online":"unknow";
 
+    private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
+
     private static CompilationUnit cu = null;
 
     static {
@@ -114,9 +116,18 @@ public class MethodAnalyze {
         List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
         Map<String, String> filedTypeMap = parseVariables(ci);
         boolean scopeExist = false;
+        Set<String> duplicateMethodName = new HashSet<>();
         for (MethodDeclaration md : methods) {
             List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
-            String method = md.getNameAsString();
+            String method = md.getNameAsString();//TODO 这里要方法签名
+            if(SHOW_DUPLICATED_METHOD_NAME) {
+                if(duplicateMethodName.contains(method)){
+                    System.out.println(className + "." + method);
+                }else{
+                    duplicateMethodName.add(method);
+                }
+            }
+            duplicateMethodName.add(method);
             ClassCallDesc desc = new ClassCallDesc(className, method);
             MethodDesc mdsc = new MethodDesc(method);
             cd.addMethodDesc(mdsc);
@@ -124,7 +135,7 @@ public class MethodAnalyze {
                 scopeExist = mce.getScope().isPresent();
                 if (scopeExist) {
                     desc.addCalledMethod(new ClassCallDesc(mce.getScope().get().toString(), mce.getNameAsString()));
-                    String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();
+                    String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
                     mdsc.addCallDesc(rawMethod);
                     mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);
                 } else {

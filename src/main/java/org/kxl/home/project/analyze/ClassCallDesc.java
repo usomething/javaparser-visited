@@ -11,6 +11,10 @@ public class ClassCallDesc {
 
     private String methodName;
 
+    private Integer paramCount;
+
+    private String paramTypes;
+
     private List<ClassCallDesc> calledMethods;
 
     public ClassCallDesc(String className, String methodName) {

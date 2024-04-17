@@ -40,14 +40,14 @@ public class CallMethodDesc {
             }
             Pattern p = patternMap.get(key);
             Matcher m = p.matcher(rawMethod);
-            if (find = m.find()) {
+            if (find = m.find()) {//把成员变量.方法名，变成类名.方法名，比如orderRep.find 变成 OrderRepository.find
                 classMethod = varType + ".";
                 if (m.end() + 1 >= rawMethod.length()) {
                     continue;//可能找到内部中有一个匹配，但是超出了substring范围，说明找到的一定错误，直接忽略
                 }
-                String next = rawMethod.substring(m.end() + 1);
-                int minEnd = getMinEnd(next);
-                classMethod += next.substring(0, minEnd);
+                String methodSignature = rawMethod.substring(m.end() + 1);
+                int minEnd = getMinEnd(methodSignature);
+                classMethod += methodSignature.substring(0, minEnd);
                 break;
             }
 
@@ -70,7 +70,7 @@ public class CallMethodDesc {
         }
     }
 
-    private static int getMinEnd(String next) {
+    private static int getMinEnd(String next) {//TODO 这里要把方法签名也匹配出来
         List<Integer> list = new ArrayList<>();
         int end = next.indexOf("(");
         if (end != -1) {
