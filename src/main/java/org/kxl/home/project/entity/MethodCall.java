@@ -11,9 +11,17 @@ public class MethodCall {
 
     private String methodName;
 
+    private Integer methodParamCount;
+
+    private String methodParamType;
+
     private String callMethod;
 
     private String callClassMethod;
+
+    private Integer callMethodParamCount;
+
+    private String callMethodParamType;
 
     private String projectName;
 
