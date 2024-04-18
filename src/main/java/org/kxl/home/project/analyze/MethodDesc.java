@@ -1,6 +1,7 @@
 package org.kxl.home.project.analyze;
 
 import lombok.Data;
+import org.kxl.home.project.entity.MethodCall;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,17 @@ public class MethodDesc {
         List<String> ret = new ArrayList<>();
         for (CallMethodDesc callDesc : callMethodDescs) {
             ret.add(String.format("('%s','%s','%s','%s','%s','%s','%s')", className, methodName, paramCount, paramTypes, callDesc.getRawMethod().replace("'", "\\'"), callDesc.getClassMethod(), projectName));
+        }
+        return ret;
+    }
+
+    public List<MethodCall> getMethodCalls(String className, String projectName) {
+        if (callDescs == null || callDescs.size() == 0) {
+            return Arrays.asList(new MethodCall(className, methodName, 0, null, null, null, projectName));
+        }
+        List<MethodCall> ret = new ArrayList<>();
+        for (CallMethodDesc callDesc : callMethodDescs) {
+            ret.add(new MethodCall(className, methodName, paramCount, paramTypes, callDesc.getRawMethod(),callDesc.getClassMethod(), projectName));
         }
         return ret;
     }

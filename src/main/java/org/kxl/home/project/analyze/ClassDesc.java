@@ -1,6 +1,7 @@
 package org.kxl.home.project.analyze;
 
 import lombok.Data;
+import org.kxl.home.project.entity.MethodCall;
 
 import java.util.List;
 
@@ -50,5 +51,17 @@ public class ClassDesc {
             sqls.add(String.format("('%s','',0,'','','','%s')", className, projectName));
         }
         return sqls;
+    }
+
+    public List<MethodCall> getMethodCalls(String projectName) {
+        List<MethodCall> methodCalls = new java.util.ArrayList<>();
+        if (methodDescs != null && methodDescs.size() > 0) {
+            for (MethodDesc desc : methodDescs) {
+                methodCalls.addAll(desc.getMethodCalls(className, projectName));
+            }
+        }else{
+            methodCalls.add(new MethodCall(className, null, 0, null, null,null, projectName));
+        }
+        return methodCalls;
     }
 }

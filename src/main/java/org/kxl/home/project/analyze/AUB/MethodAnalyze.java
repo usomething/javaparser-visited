@@ -8,10 +8,14 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.utils.Pair;
+import org.apache.ibatis.session.SqlSession;
 import org.kxl.home.project.analyze.ClassCallDesc;
 import org.kxl.home.project.analyze.ClassDesc;
 import org.kxl.home.project.analyze.MethodDesc;
+import org.kxl.home.project.entity.MethodCall;
+import org.kxl.home.project.mapper.MethodCallMapper;
 import org.kxl.home.util.FileUtil;
+import org.kxl.home.util.MapperUtil;
 
 import java.io.File;
 import java.util.*;
@@ -19,8 +23,8 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/AutoBestChina/src/main/java";
-    private final static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
+    private final static String root = "C:/workspace/OE/AutoBestChina/src/main/java";
+    private final static String projectName = root.contains("AutoBestChina")?"oe-admin":root.contains("AutobestCheckout")?"oe-online":"unknow";
 
     private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
 
@@ -41,6 +45,8 @@ public class MethodAnalyze {
         int i = 0;
         List<ClassCallDesc> allDescs = new java.util.ArrayList<>();
         List<ClassDesc> classDescs = new java.util.ArrayList<>();
+        SqlSession sqlSession = MapperUtil.getSqlSession(true);
+        MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
 
         for (File file : files) {
             if (!file.getName().endsWith(".java")) continue;
@@ -95,14 +101,20 @@ public class MethodAnalyze {
         String sqlInsert = "insert into autopart_method_call (class_name, method_name, method_param_count, method_param_type, call_method,call_class_method,project_name) values";
         int c = 0;
         List<String> sqlPart = new ArrayList<>();
+        List<MethodCall> methodCalls = new ArrayList<>();
         for (ClassDesc desc : classDescs) {
             ++c;
             contents.add(desc.printString());
 
             sqlPart.addAll(desc.generateSQLs(projectName));
+            methodCalls.addAll(desc.getMethodCalls(projectName));
             if (sqlPart.size() >= 5000 || c == classDescs.size()) {
                 sqls.add(String.format("%s %s;", sqlInsert, String.join(",", sqlPart)));
                 sqlPart.clear();
+            }
+            if(methodCalls.size() >= 5000 || c == classDescs.size()){
+                mapper.saveBatch(methodCalls);
+                methodCalls.clear();
             }
         }
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods2.txt", contents, true);
