@@ -31,6 +31,10 @@ public class MethodAnalyze {
     private static CompilationUnit cu = null;
 
     static {
+        if(root.contains("APP")){
+            projectName = projectName.replace("oe","app");
+        }
+
         StaticJavaParser
                 .getParserConfiguration()
                 .setSymbolResolver(new JavaSymbolSolver(new CombinedTypeSolver()));
