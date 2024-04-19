@@ -15,12 +15,13 @@ public class CallChain {
 
     public static void main(String[] args) throws Exception {
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
-
-        String[] innerMethods =
-                new String[]{"PADVToolRelationServiceImpl.getPAStatusDescByResult"}
-//                new String[]{"OrderRepository.updatePaypalCaptureAndStatus","OrderRepository.updatePaypalAuthor","OrderRepository.updateCancel","OrderRepository.updateCancelPaymentConversion","OrderRepository.updateShip","OrderRepository.updateIsShipAndStatus","OrderRepository.updateOrderStatusId","OrderRepository.updateOrderStatusIdAndProcessDate","OrderRepository.updateyourPayRelate"};//oe-admin
-                //new String[]{"OrderRepository.updateOrderStatus","OrderRepository.updateOrderStatusId","OrderRepository.ordersUpdatePaypalAuthorization","OrderRepository.updateYourPayRelate","OrderRepository.updateCancel"};//oe-online
-        ;
+        String projectName = "app-online";
+        String[] innerMethods = new String[]{
+                "OrderRepository.updateOrderStatus","OrderRepository.updateOrderStatusId","OrderRepository.ordersUpdatePaypalAuthorization","OrderRepository.updateYourPayRelate","OrderRepository.updateCancel"
+//                "PADVToolRelationServiceImpl.getPAStatusDescByResult"
+//                "OrderRepository.updatePaypalCaptureAndStatus","OrderRepository.updatePaypalAuthor","OrderRepository.updateCancel","OrderRepository.updateCancelPaymentConversion","OrderRepository.updateShip","OrderRepository.updateIsShipAndStatus","OrderRepository.updateOrderStatusId","OrderRepository.updateOrderStatusIdAndProcessDate","OrderRepository.updateyourPayRelate"//oe-admin
+                //"OrderRepository.updateOrderStatus","OrderRepository.updateOrderStatusId","OrderRepository.ordersUpdatePaypalAuthorization","OrderRepository.updateYourPayRelate","OrderRepository.updateCancel"//oe-online
+        };
 
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
 
@@ -29,7 +30,7 @@ public class CallChain {
             inn.add(innerMethod);
             List<List<String>> result = new ArrayList<>();
             result.add(inn);
-            List<List<String>> chainDesc = parseRelations(mapper,"oe-admin",result);
+            List<List<String>> chainDesc = parseRelations(mapper,projectName,result);
             for(List<String> oneChain : chainDesc){
                 System.out.println(String.join(" -> ",oneChain));
             }
