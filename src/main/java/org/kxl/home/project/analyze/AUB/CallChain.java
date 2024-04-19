@@ -17,8 +17,10 @@ public class CallChain {
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
 
         String[] innerMethods =
-                new String[]{"OrderRepository.updatePaypalCaptureAndStatus","OrderRepository.updatePaypalAuthor","OrderRepository.updateCancel","OrderRepository.updateCancelPaymentConversion","OrderRepository.updateShip","OrderRepository.updateIsShipAndStatus","OrderRepository.updateOrderStatusId","OrderRepository.updateOrderStatusIdAndProcessDate","OrderRepository.updateyourPayRelate"};//oe-admin
+                new String[]{"PADVToolRelationServiceImpl.getPAStatusDescByResult"}
+//                new String[]{"OrderRepository.updatePaypalCaptureAndStatus","OrderRepository.updatePaypalAuthor","OrderRepository.updateCancel","OrderRepository.updateCancelPaymentConversion","OrderRepository.updateShip","OrderRepository.updateIsShipAndStatus","OrderRepository.updateOrderStatusId","OrderRepository.updateOrderStatusIdAndProcessDate","OrderRepository.updateyourPayRelate"};//oe-admin
                 //new String[]{"OrderRepository.updateOrderStatus","OrderRepository.updateOrderStatusId","OrderRepository.ordersUpdatePaypalAuthorization","OrderRepository.updateYourPayRelate","OrderRepository.updateCancel"};//oe-online
+        ;
 
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
 

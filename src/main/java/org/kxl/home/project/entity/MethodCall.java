@@ -25,6 +25,23 @@ public class MethodCall {
 
     private String projectName;
 
+
+    public MethodCall() {
+    }
+
+    public MethodCall(Integer id, String className, String methodName, Integer methodParamCount, String methodParamType, String callMethod, String callClassMethod, Integer callMethodParamCount, String callMethodParamType, String projectName) {
+        this.id = id;
+        this.className = className;
+        this.methodName = methodName;
+        this.methodParamCount = methodParamCount;
+        this.methodParamType = methodParamType;
+        this.callMethod = callMethod;
+        this.callClassMethod = callClassMethod;
+        this.callMethodParamCount = callMethodParamCount;
+        this.callMethodParamType = callMethodParamType;
+        this.projectName = projectName;
+    }
+
     public MethodCall(String className, String methodName, Integer methodParamCount, String methodParamType, String callMethod,
                       String callClassMethod, String projectName) {
         this.className = className;
