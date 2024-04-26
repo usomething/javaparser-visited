@@ -1,6 +1,8 @@
 package org.kxl.home.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,25 @@ public class FileUtil {
             raf.writeBytes(line);
         }
         raf.close();
+    }
+
+    public static List<String> readFile(String file){
+        BufferedReader br = null;
+        List<String> contents = new ArrayList<>();
+        try {
+            br = new BufferedReader(new FileReader(file));
+            String line = null;
+            while( (line = br.readLine())!=null ){
+                contents.add(line);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                br.close();
+            }catch (Exception e){}
+        }
+        return contents;
     }
 
 }
