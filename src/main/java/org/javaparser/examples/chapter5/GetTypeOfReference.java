@@ -36,19 +36,36 @@ public class GetTypeOfReference {
         CompilationUnit cu = StaticJavaParser.parse(new File(FILE_PATH));
 
         cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci -> {
+            NodeList<ClassOrInterfaceType> extendedTypes = ci.getExtendedTypes();
+            if (extendedTypes != null) {
+                extendedTypes.stream().forEach(t -> {
+                    System.out.println(t.getNameAsString());
+                });
+            }
+            NodeList<ClassOrInterfaceType> implementedTypes = ci.getImplementedTypes();
+            if (implementedTypes != null) {
+                implementedTypes.stream().forEach(t -> {
+                    System.out.println(t.getNameAsString());
+                });
+            }
+        });
+
+        System.exit(0);
+
+        cu.findAll(ClassOrInterfaceDeclaration.class).forEach(ci -> {
             ci.findAll(MethodDeclaration.class).forEach(md -> {
-                String param = String.join(",",md.getParameters().stream().map(p->p.getType().asString()).collect(Collectors.toList()));
-                System.out.println(md.getNameAsString()+"("+param+")");
+                String param = String.join(",", md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList()));
+                System.out.println(md.getNameAsString() + "(" + param + ")");
 
                 List<MethodCallExpr> mces = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());/*.forEach(mce -> {
                     System.out.println("\t"+mce.getNameAsString()+"("+mce.getArguments().stream().map(a->a.).collect(Collectors.toList())+")");
                 });*/
-                for(MethodCallExpr mce : mces){
-                    System.out.print(" -> "+mce.getNameAsString()+" : ");
+                for (MethodCallExpr mce : mces) {
+                    System.out.print(" -> " + mce.getNameAsString() + " : ");
 
                     List<Expression> ags = mce.getArguments();
-                    for(Expression ag : ags){
-                        System.out.print(ag.toString()+",");
+                    for (Expression ag : ags) {
+                        System.out.print(ag.toString() + ",");
                     }
                     System.out.println();
                 }

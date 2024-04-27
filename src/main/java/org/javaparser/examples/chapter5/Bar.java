@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class Bar extends HashMap<Double, Float> {
+class Bar extends HashMap<Double, Float> implements I {
 
     private String a, c;
 
@@ -14,8 +14,8 @@ class Bar extends HashMap<Double, Float> {
 
     private A a1;
 
-    void aMethod(String s1,Integer i1,boolean b1,long l1) {
-        bMethod(BigDecimal.ONE,a1);
+    void aMethod(String s1, Integer i1, boolean b1, long l1) {
+        bMethod(BigDecimal.ONE, a1);
         while (true) {
             int a = 0;
             a = a + 1;
@@ -29,6 +29,11 @@ class Bar extends HashMap<Double, Float> {
 
     Integer cMethod() {
         return 1;
+    }
+
+    @Override
+    public void i() {
+        
     }
 }
 

@@ -3,8 +3,10 @@ package org.kxl.home.project.analyze.AUB;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.utils.Pair;
@@ -23,16 +25,16 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/APP/AutobestCheckout/src/main/java";
-    private static String projectName = root.contains("AutoBestChina")?"oe-admin":root.contains("AutobestCheckout")?"oe-online":"unknow";
+    private final static String root = "C:/workspace/APP/AutoBestChina/src/main/java";
+    private static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
     private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
 
     private static CompilationUnit cu = null;
 
     static {
-        if(root.contains("APP")){
-            projectName = projectName.replace("oe","app");
+        if (root.contains("APP")) {
+            projectName = projectName.replace("oe", "app");
         }
 
         StaticJavaParser
@@ -51,6 +53,10 @@ public class MethodAnalyze {
         List<ClassDesc> classDescs = new java.util.ArrayList<>();
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
+
+        // 还需要解析继承关系和接口实现关系
+        Map<String, String> extendsRelation = new HashMap<>();//继承关系肯定一对一
+        Map<String, List<String>> implementsRelation = new HashMap<>();//接口实现关系是一对多
 
         for (File file : files) {
             if (!file.getName().endsWith(".java")) continue;
@@ -85,6 +91,8 @@ public class MethodAnalyze {
                     Pair<List<ClassCallDesc>, ClassDesc> pair = parseMethod(ci);
                     allDescs.addAll(pair.a);
                     classDescs.add(pair.b);
+                    parseExtendsRelation(ci, extendsRelation);
+                    parseImplementsRelation(ci, implementsRelation);
                 } else if (Objects.equals(type, "Annotation")) {
                     AnnotationDeclaration an = (AnnotationDeclaration) n;
                     className = an.getFullyQualifiedName().get();
@@ -116,13 +124,44 @@ public class MethodAnalyze {
                 sqls.add(String.format("%s %s;", sqlInsert, String.join(",", sqlPart)));
                 sqlPart.clear();
             }
-            if(methodCalls.size() >= 5000 || c == classDescs.size()){
+            if (methodCalls.size() >= 5000 || c == classDescs.size()) {
                 mapper.saveBatch(methodCalls);
                 methodCalls.clear();
             }
         }
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods2.txt", contents, true);
         FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/sql.txt", sqls, true);
+    }
+
+    //key:子类，value:父类
+    private static void parseExtendsRelation(ClassOrInterfaceDeclaration ci, Map<String, String> extendsRelation) {
+        NodeList<ClassOrInterfaceType> extendsList = ci.getExtendedTypes();
+        if (extendsList.isNonEmpty()) {
+            String className = ci.getFullyQualifiedName().get();
+            extendsList.forEach(e -> {
+                if (!extendsRelation.containsKey(className)) {
+                    extendsRelation.put(className, e.getNameAsString());
+                } else {
+                    System.err.println("重复子类 : " + className);
+                }
+            });
+        }
+    }
+
+    //key:子类，value:接口们
+    public static void parseImplementsRelation(ClassOrInterfaceDeclaration ci, Map<String, List<String>> implementsRelation) {
+        NodeList<ClassOrInterfaceType> implementsList = ci.getImplementedTypes();
+        if (implementsList.isNonEmpty()) {
+            String className = ci.getFullyQualifiedName().get();
+            List<String> list = implementsList.stream().map(e -> e.getNameAsString()).collect(Collectors.toList());
+            if (!list.isEmpty()) {
+                if (implementsRelation.containsKey(className)) {
+                    System.err.println("重复实现接口类:" + className);
+                } else {
+                    implementsRelation.put(className, list);
+                }
+            }
+        }
     }
 
     private static Pair<List<ClassCallDesc>, ClassDesc> parseMethod(ClassOrInterfaceDeclaration ci) {
