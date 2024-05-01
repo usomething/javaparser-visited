@@ -66,6 +66,8 @@ public class CallMethodDesc {
                     int minEnd = getMinEnd(methodSignature);
                     classMethod += methodSignature.substring(0, minEnd);
                 }
+            }else{//这里非常有可能调用的不是成员变量，那就按照原来的样子写入吧，有可能是调用静态方法哦
+                classMethod = rawMethod;
             }
         }
     }
