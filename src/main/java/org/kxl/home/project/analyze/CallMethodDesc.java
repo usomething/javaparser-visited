@@ -16,13 +16,16 @@ public class CallMethodDesc {
     //原始方法调用表达式
     private String rawMethod;//PS 这里很难带上签名
 
+    private Integer paramCount;//虽然带上方法签名很难，但是第一步，先带上参数个数，能解决80%以上的问题
+
     //类方法调用表达式
     private String classMethod = "";
 
     private static Map<String, Pattern> patternMap = new HashMap<>();
 
-    public CallMethodDesc(String rawMethod) {
+    public CallMethodDesc(String rawMethod, Integer paramCount) {
         this.rawMethod = rawMethod;
+        this.paramCount = paramCount;
     }
 
     public void parseClassMethod(String className, Map<String, String> fieldTypeMap) {
@@ -66,7 +69,7 @@ public class CallMethodDesc {
                     int minEnd = getMinEnd(methodSignature);
                     classMethod += methodSignature.substring(0, minEnd);
                 }
-            }else{//这里非常有可能调用的不是成员变量，那就按照原来的样子写入吧，有可能是调用静态方法哦
+            } else {//这里非常有可能调用的不是成员变量，那就按照原来的样子写入吧，有可能是调用静态方法哦
                 classMethod = rawMethod;
             }
         }

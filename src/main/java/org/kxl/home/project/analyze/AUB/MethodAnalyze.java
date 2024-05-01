@@ -9,9 +9,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import com.github.javaparser.utils.Pair;
 import org.apache.ibatis.session.SqlSession;
-import org.kxl.home.project.analyze.ClassCallDesc;
 import org.kxl.home.project.analyze.ClassDesc;
 import org.kxl.home.project.analyze.MethodDesc;
 import org.kxl.home.project.entity.MethodCall;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/APP/AutoBestChina/src/main/java";
+    private final static String root = "C:/workspace/AutoBestChina/src/main/java";
     private static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
     private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
@@ -49,7 +47,6 @@ public class MethodAnalyze {
     public static void main(String[] args) throws Exception {
         List<File> files = traverseRoot(root);
         int i = 0;
-        List<ClassCallDesc> allDescs = new java.util.ArrayList<>();
         List<ClassDesc> classDescs = new java.util.ArrayList<>();
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
@@ -88,9 +85,8 @@ public class MethodAnalyze {
                 } else if (Objects.equals(type, "Class")) {
                     ClassOrInterfaceDeclaration ci = (ClassOrInterfaceDeclaration) n;
                     className = ci.getFullyQualifiedName().get();
-                    Pair<List<ClassCallDesc>, ClassDesc> pair = parseMethod(ci);
-                    allDescs.addAll(pair.a);
-                    classDescs.add(pair.b);
+                    ClassDesc classDesc = parseMethod(ci);
+                    classDescs.add(classDesc);
                     parseExtendsRelation(ci, extendsRelation);
                     parseImplementsRelation(ci, implementsRelation);
                 } else if (Objects.equals(type, "Annotation")) {
@@ -103,34 +99,16 @@ public class MethodAnalyze {
             }
         }
 
-        List<String> contents = new ArrayList<>();
-        List<String> sqls = new ArrayList<>();
-        for (ClassCallDesc desc : allDescs) {
-            contents.add(desc.printString());
-        }
-        FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods.txt", contents, true);
-        contents.clear();
-        String sqlInsert = "insert into autopart_method_call (class_name, method_name, method_param_count, method_param_type, call_method,call_class_method,project_name) values";
         int c = 0;
-        List<String> sqlPart = new ArrayList<>();
         List<MethodCall> methodCalls = new ArrayList<>();
         for (ClassDesc desc : classDescs) {
             ++c;
-            contents.add(desc.printString());
-
-            sqlPart.addAll(desc.generateSQLs(projectName));
             methodCalls.addAll(desc.getMethodCalls(projectName));
-            if (sqlPart.size() >= 5000 || c == classDescs.size()) {
-                sqls.add(String.format("%s %s;", sqlInsert, String.join(",", sqlPart)));
-                sqlPart.clear();
-            }
             if (methodCalls.size() >= 5000 || c == classDescs.size()) {
                 mapper.saveBatch(methodCalls);
                 methodCalls.clear();
             }
         }
-        FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/methods2.txt", contents, true);
-        FileUtil.writeFile("C:/workspace/javaparser-visited/src/main/java/org/kxl/home/project/analyze/sql.txt", sqls, true);
     }
 
     //key:子类，value:父类
@@ -164,8 +142,7 @@ public class MethodAnalyze {
         }
     }
 
-    private static Pair<List<ClassCallDesc>, ClassDesc> parseMethod(ClassOrInterfaceDeclaration ci) {
-        List<ClassCallDesc> descs = new ArrayList<>();
+    private static ClassDesc parseMethod(ClassOrInterfaceDeclaration ci) {
         String className = ci.getFullyQualifiedName().get();
         ClassDesc cd = new ClassDesc(className);
         List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
@@ -186,27 +163,21 @@ public class MethodAnalyze {
                 }
             }
             duplicateMethodName.add(method);
-            ClassCallDesc desc = new ClassCallDesc(className, method, paramList.size(), paramSignature);
             MethodDesc mdsc = new MethodDesc(method, paramList.size(), paramSignature);
             cd.addMethodDesc(mdsc);
             for (MethodCallExpr mce : methodCallExprs) {
                 scopeExist = mce.getScope().isPresent();
                 Integer paramCount = mce.getArguments().size();
                 if (scopeExist) {
-                    desc.addCalledMethod(new ClassCallDesc(mce.getScope().get().toString(), mce.getNameAsString(), paramCount));
                     String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
-                    mdsc.addCallDesc(rawMethod);
-                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);
+                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className, paramCount);
                 } else {
-                    desc.addCalledMethod(new ClassCallDesc("this", mce.getNameAsString(), paramCount));
                     String rawMethod = "this." + mce.getNameAsString();
-                    mdsc.addCallDesc(rawMethod);
-                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className);
+                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className, paramCount);
                 }
             }
-            descs.add(desc);
         }
-        return new Pair<>(descs, cd);
+        return cd;
     }
 
     private static Map<String, String> parseVariables(ClassOrInterfaceDeclaration ci) {
