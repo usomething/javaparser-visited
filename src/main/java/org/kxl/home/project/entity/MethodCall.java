@@ -1,8 +1,12 @@
 package org.kxl.home.project.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MethodCall {
 
     private Integer id;
@@ -25,6 +29,11 @@ public class MethodCall {
 
     private String projectName;
 
+    public MethodCall(String callClassMethod, Integer callMethodParamCount) {
+        this.callClassMethod = callClassMethod;
+        this.callMethodParamCount = callMethodParamCount;
+    }
+
     public MethodCall(String className, String methodName, Integer methodParamCount, String methodParamType, String callMethod,
                       String callClassMethod, Integer callMethodParamCount, String projectName) {
         this.className = className;
@@ -39,6 +48,13 @@ public class MethodCall {
 
     public String getCaller() {
         return className.substring(className.lastIndexOf(".") + 1) + "." + methodName;
+    }
+
+    public MethodCall getCallerClass() {
+        MethodCall caller = new MethodCall();
+        caller.setCallClassMethod(className.substring(className.lastIndexOf(".") + 1) + "." + methodName);
+        caller.setCallMethodParamCount(methodParamCount);
+        return caller;
     }
 
 }

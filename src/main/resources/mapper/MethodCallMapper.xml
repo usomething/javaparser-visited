@@ -19,7 +19,7 @@
     </resultMap>
     
     <select id="findByCallClassMethodAndProjectName" resultMap="methodCall">
-        select * from autopart_method_call c where project_name=#{projectName} and c.call_class_method in
+        select * from autopart_method_call c where project_name=#{projectName} and c.call_method_param_count=#{paramCount} and c.call_class_method in
         <foreach item="desc" index="index" collection="callDescs" open="(" separator="," close=")">
             #{desc}
         </foreach>

@@ -10,74 +10,70 @@ import org.kxl.home.util.MapperUtil;
 
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CallChain {
 
     public static void main(String[] args) throws Exception {
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
-        String projectName = "app-online";
-        String[] innerMethods = new String[]{
-                "OrderRepository.updateOrderStatus","OrderRepository.updateOrderStatusId","OrderRepository.ordersUpdatePaypalAuthorization","OrderRepository.updateYourPayRelate","OrderRepository.updateCancel"
-//                "PADVToolRelationServiceImpl.getPAStatusDescByResult"
-//                "OrderRepository.updatePaypalCaptureAndStatus","OrderRepository.updatePaypalAuthor","OrderRepository.updateCancel","OrderRepository.updateCancelPaymentConversion","OrderRepository.updateShip","OrderRepository.updateIsShipAndStatus","OrderRepository.updateOrderStatusId","OrderRepository.updateOrderStatusIdAndProcessDate","OrderRepository.updateyourPayRelate"//oe-admin
-                //"OrderRepository.updateOrderStatus","OrderRepository.updateOrderStatusId","OrderRepository.ordersUpdatePaypalAuthorization","OrderRepository.updateYourPayRelate","OrderRepository.updateCancel"//oe-online
-        };
-
+        String projectName = "oe-admin";
+        MethodCall[] innerMethods = new MethodCall[]{new MethodCall("ShippingUtil.canFedexFreight", 5)};
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
 
-        for(String innerMethod : innerMethods){
-            List<String> inn = new ArrayList<>();
+        for (MethodCall innerMethod : innerMethods) {
+            List<MethodCall> inn = new ArrayList<>();
             inn.add(innerMethod);
-            List<List<String>> result = new ArrayList<>();
+            List<List<MethodCall>> result = new ArrayList<>();
             result.add(inn);
-            List<List<String>> chainDesc = parseRelations(mapper,projectName,result);
-            for(List<String> oneChain : chainDesc){
-                System.out.println(String.join(" -> ",oneChain));
+            List<List<MethodCall>> chainDesc = parseRelations(mapper, projectName, result);
+            for (List<MethodCall> oneChain : chainDesc) {
+                System.out.println(oneChain.stream().map(m -> m.getCallClassMethod()).collect(Collectors.joining(" ->")));
             }
         }
     }
 
-    private static List<List<String>> parseRelations(MethodCallMapper mapper,String projectName,List<List<String>> ret) {
+    private static List<List<MethodCall>> parseRelations(MethodCallMapper mapper, String projectName, List<List<MethodCall>> ret) {
         Set<String> chainSet = new HashSet<>();//去重set
 
-        List<List<String>> result = new ArrayList<>();
+        List<List<MethodCall>> result = new ArrayList<>();
         Boolean existUnEndedChain = false;
-        for(List<String> chain : ret){
-            String chainStr = String.join(",",chain);
-            if(chainSet.contains(chainStr))continue;
+        for (List<MethodCall> chain : ret) {
+            String chainStr = chain.stream().map(mc -> mc.getCallClassMethod()).collect(Collectors.joining(","));
+            if (chainSet.contains(chainStr)) continue;
             chainSet.add(chainStr);
 
-            List<List<String>> newChains = parseOneChain(mapper,projectName,chain);
-            if(newChains == null){
-                if(!Objects.equals(chain.get(0),"START")) {
-                    chain.add(0, "START");
+            List<List<MethodCall>> newChains = parseOneChain(mapper, projectName, chain);
+            if (newChains == null) {
+                if (!Objects.equals(chain.get(0).getCallClassMethod(), "START")) {
+                    chain.add(0, new MethodCall("START", -1));
                 }
                 result.add(chain);
-            }else {
+            } else {
                 result.addAll(newChains);
                 existUnEndedChain = true;
             }
         }
 
-        if(existUnEndedChain){
-            return parseRelations(mapper,projectName,result);
+        if (existUnEndedChain) {
+            return parseRelations(mapper, projectName, result);
         }
 
         return result;
     }
 
-    private static List<List<String>> parseOneChain(MethodCallMapper mapper,String projectName,List<String> oneChain) {
-        String innerMethod = oneChain.get(0);
-        if(Objects.equals(innerMethod,"START")){
+    private static List<List<MethodCall>> parseOneChain(MethodCallMapper mapper, String projectName, List<MethodCall> oneChain) {
+        MethodCall innerMethod = oneChain.get(0);
+        Integer paramCount = oneChain.get(0).getCallMethodParamCount();
+        if (Objects.equals(innerMethod.getCallClassMethod(), "START")) {
             return null;
         }
-        List<List<String>> ret = null;
-        List<MethodCall> mcs = mapper.findByCallClassMethodAndProjectName(generateInnerMethod(innerMethod), projectName);
-        if(mcs!=null && mcs.size()>0) {
+        List<List<MethodCall>> ret = null;
+        List<MethodCall> mcs = mapper.findByCallClassMethodAndProjectName(generateInnerMethod(innerMethod), projectName, paramCount);
+        if (mcs != null && mcs.size() > 0) {
             ret = new ArrayList<>();
-            for(MethodCall mc : mcs) {
-                String caller = mc.getCaller();
-                List<String> newChain = copyArray(oneChain);
+            for (MethodCall mc : mcs) {
+                MethodCall caller = mc.getCallerClass();
+                List<MethodCall> newChain = copyArray(oneChain);
                 newChain.add(0, caller);
                 ret.add(newChain);
             }
@@ -85,18 +81,18 @@ public class CallChain {
         return ret;
     }
 
-    private static List<String> copyArray(List<String> oneChain){
-        List<String> newList = new ArrayList<>();
+    private static List<MethodCall> copyArray(List<MethodCall> oneChain) {
+        List<MethodCall> newList = new ArrayList<>();
         newList.addAll(oneChain);
         return newList;
     }
 
-    private static List<String> generateInnerMethod(String innerMethod){
+    private static List<String> generateInnerMethod(MethodCall innerMethod) {
         List<String> list = new ArrayList<>();
-        list.add(innerMethod);
-        String[] split = innerMethod.split("\\.");
-        if(split[0].endsWith("Impl")){
-            list.add(split[0].replace("Impl","")+"."+split[1]);
+        list.add(innerMethod.getCallClassMethod());
+        String[] split = innerMethod.getCallClassMethod().split("\\.");
+        if (split[0].endsWith("Impl")) {
+            list.add(split[0].replace("Impl", "") + "." + split[1]);
         }
         return list;
     }
