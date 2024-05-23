@@ -46,8 +46,10 @@ public class MethodDesc {
     //生成要DB保存的类
     public List<MethodCall> getMethodCalls(String className, String projectName) {
         List<MethodCall> ret = new ArrayList<>();
-        for (CallMethodDesc callDesc : callMethodDescs) {
-            ret.add(new MethodCall(className, methodName, paramCount, paramTypes, callDesc.getRawMethod(), callDesc.getClassMethod(), callDesc.getParamCount(), projectName));
+        if(callMethodDescs!=null) {
+            for(CallMethodDesc callDesc : callMethodDescs) {
+                ret.add(new MethodCall(className, methodName, paramCount, paramTypes, callDesc.getRawMethod(), callDesc.getClassMethod(), callDesc.getParamCount(), projectName));
+            }
         }
         return ret;
     }
