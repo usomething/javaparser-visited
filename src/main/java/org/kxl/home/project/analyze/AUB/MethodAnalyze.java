@@ -106,6 +106,7 @@ public class MethodAnalyze {
             methodCalls.addAll(desc.getMethodCalls(projectName));
             if (methodCalls.size() >= 5000 || c == classDescs.size()) {
                 mapper.saveBatch(methodCalls);
+                System.out.println("save : " + methodCalls.size());
                 methodCalls.clear();
             }
         }
