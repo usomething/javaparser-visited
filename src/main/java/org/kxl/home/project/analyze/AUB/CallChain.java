@@ -16,8 +16,10 @@ public class CallChain {
 
     public static void main(String[] args) throws Exception {
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
-        String projectName = "oe-admin";
-        MethodCall[] innerMethods = new MethodCall[]{new MethodCall("ShippingUtil.canFedexFreight", 5)};
+        //这里是要改的
+        String projectName = "oe-online";
+        //这里也是要改的，注意：这里要找到对应接口的方法，实现类中的私有方法不行，自己手动上踪找到接口的定义方法（也就是实现类中的public方法）
+        MethodCall[] innerMethods = new MethodCall[]{new MethodCall("UspsRouterServiceImpl.uspsRestApiServiceGetUspsRateList", 7)};
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
 
         for (MethodCall innerMethod : innerMethods) {
