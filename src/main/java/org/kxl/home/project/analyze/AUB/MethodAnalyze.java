@@ -150,10 +150,10 @@ public class MethodAnalyze {
         boolean scopeExist = false;
         Set<String> duplicateMethodName = new HashSet<>();
         for (MethodDeclaration md : methods) {
-            List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
             List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
             String paramSignature = String.join(",", paramList);
             String method = md.getNameAsString();//DONE 这里要方法签名
+            //如果有重复方法，旧显示出来，这里并没什么逻辑
             if (SHOW_DUPLICATED_METHOD_NAME) {
                 String methodSignature = className + "." + method + "(" + paramSignature + ")";
                 if (duplicateMethodName.contains(methodSignature)) {
@@ -164,14 +164,19 @@ public class MethodAnalyze {
             }
             duplicateMethodName.add(method);
             MethodDesc mdsc = new MethodDesc(method, paramList.size(), paramSignature);
+            //把本类中所有定义的方法都加入到methodDescs这个集合中
             cd.addMethodDesc(mdsc);
+            List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
             for (MethodCallExpr mce : methodCallExprs) {
+                //scope 是这个方法的主人，比如a.x(15)，方法是x,参数是15，而主人是a
                 scopeExist = mce.getScope().isPresent();
                 Integer paramCount = mce.getArguments().size();
                 if (scopeExist) {
+                    // 这里的方法签名很难给，需要解析所有参数的类型，那就要扫描本方法内的变量定义，入参方法定义，以及成员变量定义，还有全局变量定义
                     String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
                     mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className, paramCount);
                 } else {
+                    //没有scope说明调用的就是本类内的方法
                     String rawMethod = "this." + mce.getNameAsString();
                     mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className, paramCount);
                 }
@@ -180,6 +185,11 @@ public class MethodAnalyze {
         return cd;
     }
 
+    /**
+     * 成员变量解析，把本类中所有的成员变量名位key，类型为value放入map中
+     * @param ci
+     * @return
+     */
     private static Map<String, String> parseVariables(ClassOrInterfaceDeclaration ci) {
         Map<String, String> ret = new HashMap<>();
         List<FieldDeclaration> vars = ci.findAll(FieldDeclaration.class).stream().collect(Collectors.toList());
@@ -191,12 +201,12 @@ public class MethodAnalyze {
                 }
             }
         }
-
+        //这里处理本工程特有的repository
         Map<String, String> repositoryMap = ServiceRepositoryParser.parse(ci);
         if (repositoryMap != null && !repositoryMap.isEmpty()) {
             ret.putAll(repositoryMap);
         }
-
+        //这里处理本工程特有的service
         Map<String, String> serviceMap = ControllerServiceParser.parse(ci);
         if (serviceMap != null && !serviceMap.isEmpty()) {
             ret.putAll(serviceMap);

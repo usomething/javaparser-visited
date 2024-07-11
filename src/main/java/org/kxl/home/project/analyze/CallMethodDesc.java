@@ -28,6 +28,11 @@ public class CallMethodDesc {
         this.paramCount = paramCount;
     }
 
+    /**
+     * 把调用方法的换成全限定类名+方法，这样更精确
+     * @param className
+     * @param fieldTypeMap
+     */
     public void parseClassMethod(String className, Map<String, String> fieldTypeMap) {
         if (fieldTypeMap == null || fieldTypeMap.isEmpty()) return;
         boolean find = false;
