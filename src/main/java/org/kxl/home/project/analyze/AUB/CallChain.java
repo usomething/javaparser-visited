@@ -46,6 +46,7 @@ public class CallChain {
         }
     }
 
+    //将给定的List<List<MethodCall>> ret有限分裂出所有的调用头，直到头再也没有头，也即是根为止
     private static List<List<MethodCall>> parseRelations(MethodCallMapper mapper, String projectName, List<List<MethodCall>> ret) {
         Set<String> chainSet = new HashSet<>();//去重set
 
@@ -55,26 +56,35 @@ public class CallChain {
             String chainStr = chain.stream().map(mc -> mc.getCallClassMethod()).collect(Collectors.joining(","));
             if (chainSet.contains(chainStr)) continue;
             chainSet.add(chainStr);
-
+            //一分多
             List<List<MethodCall>> newChains = parseOneChain(mapper, projectName, chain);
+            //如果碰到null，代表已经是完整的链条了，头上加上START
             if (newChains == null) {
                 if (!Objects.equals(chain.get(0).getCallClassMethod(), "START")) {
                     chain.add(0, new MethodCall("START", -1));
                 }
                 result.add(chain);
             } else {
+                //这里说明又有至少一根链条加上了调用头
                 result.addAll(newChains);
                 existUnEndedChain = true;
             }
         }
 
-        if (existUnEndedChain) {
-            return parseRelations(mapper, projectName, result);
+        if (!existUnEndedChain) {
+            return result;
         }
-
-        return result;
+        return parseRelations(mapper, projectName, result);
     }
 
+    /**
+     * 处理一根链条，找到上方调用者，可能有多个，那就先复制自己多根链条，把每个上方调用者都加到这些链条的头部，然后把分裂出的多跟链条作为
+     * 如果没有上方调用者，自己就是根了，那就返回null
+     * @param mapper
+     * @param projectName
+     * @param oneChain
+     * @return
+     */
     private static List<List<MethodCall>> parseOneChain(MethodCallMapper mapper, String projectName, List<MethodCall> oneChain) {
         MethodCall innerMethod = oneChain.get(0);
         Integer paramCount = oneChain.get(0).getCallMethodParamCount();
