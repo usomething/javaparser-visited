@@ -19,7 +19,19 @@ public class CallChain {
         //这里是要改的
         String projectName = "oe-online";
         //这里也是要改的，注意：这里要找到对应接口的方法，实现类中的私有方法不行，自己手动上踪找到接口的定义方法（也就是实现类中的public方法）
-        MethodCall[] innerMethods = new MethodCall[]{new MethodCall("UspsRouterServiceImpl.uspsRestApiServiceGetUspsRateList", 7)};
+        MethodCall[] innerMethods = new MethodCall[]{
+                /*new MethodCall("CommonServiceImpl.addOperationProcessHistory", 5),
+                new MethodCall("CommonServiceImpl.saveOrdersProcessHistory", 3),
+                new MethodCall("EmailServiceImpl.addOperationHistory",5),
+                new MethodCall("NotificationServiceImpl.addPaMsgOrderProcessHistory",4),
+                new MethodCall("OrderServiceImpl.addOperationHistory",5),
+                new MethodCall("OrderServiceImpl.insertIntoProcessHistory",5),
+                new MethodCall("OrderServiceImpl.insertIntoProcessHistory",7)*/
+                /*new MethodCall("CommonFunctionServiceImpl.insertIntoProcessHistory",8),
+                new MethodCall("NotificationServiceImpl.insertIntoProcessHistory",8),
+                new MethodCall("Notification2ServiceImpl.insertIntoProcessHistory",8)*/
+                new MethodCall("OrdersProcessHistoryRepository.saveAndFlush",1)
+        };
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
 
         for (MethodCall innerMethod : innerMethods) {

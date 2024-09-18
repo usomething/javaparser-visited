@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/AutoBestChina/src/main/java";
+    private final static String root = "C:/workspace/OE/AutobestCheckout/src/main/java";
     private static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
     private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
