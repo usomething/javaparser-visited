@@ -1,14 +1,13 @@
 package org.kxl.home.project.analyze.AUB;
 
-import org.apache.ibatis.io.Resources;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.kxl.home.project.entity.MethodCall;
 import org.kxl.home.project.mapper.MethodCallMapper;
+import org.kxl.home.project.model.MethodCallNode;
+import org.kxl.home.util.ListUtil;
 import org.kxl.home.util.MapperUtil;
 
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,8 +31,8 @@ public class CallChain {
                 new MethodCall("Notification2ServiceImpl.insertIntoProcessHistory",8)*/
                 new MethodCall("OrdersProcessHistoryRepository.saveAndFlush",1)
         };
+        List<List<MethodCall>> reverse = new ArrayList<>();
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
-
         for (MethodCall innerMethod : innerMethods) {
             List<MethodCall> inn = new ArrayList<>();
             inn.add(innerMethod);
@@ -42,7 +41,13 @@ public class CallChain {
             List<List<MethodCall>> chainDesc = parseRelations(mapper, projectName, result);
             for (List<MethodCall> oneChain : chainDesc) {
                 System.out.println(oneChain.stream().map(m -> m.getCallClassMethod()).collect(Collectors.joining(" ->")));
+                reverse.add(ListUtil.reverse(oneChain));
             }
+        }
+
+        List<MethodCallNode> rootNodes = constructTree(reverse);
+        for(MethodCallNode rootNode : rootNodes) {
+            System.out.println(rootNode);
         }
     }
 
@@ -119,5 +124,56 @@ public class CallChain {
             list.add(split[0].replace("Impl", "") + "." + split[1]);
         }
         return list;
+    }
+
+    private static List<MethodCallNode> constructTree(List<List<MethodCall>> chains) {
+        Map<String,MethodCallNode> map = new HashMap<>();
+        List<MethodCallNode> allRoots = new ArrayList<>();
+
+        String callClassMethod = null;
+
+        for(List<MethodCall> chain : chains){
+            for(int i=0;i<chain.size();++i){
+                callClassMethod = chain.get(i).getCallClassMethod();
+                if(i==0){//如果是根
+                    if(!map.containsKey(callClassMethod)){
+                        MethodCallNode root = new MethodCallNode();
+                        root.setSelf(chain.get(i));
+                        root.setCoord(Pair.of(1,0));
+                        map.put(callClassMethod,root);
+                        allRoots.add(root);
+                    }else{
+                        //已经放进去了，别再此重复放了
+                    }
+                }else{//如果是二级以及以后的调用端
+                    if(Objects.equals("START",chain.get(i).getCallClassMethod())){
+                        //START 跳过
+                        continue;
+                    }
+                    //先找出父，且肯定能找到不存在为null的情况
+                    MethodCallNode myParent = map.get(chain.get(i-1).getCallClassMethod());
+                    //再找一下自己是不是也曾出现过
+                    MethodCallNode mySelf = map.get(callClassMethod);
+                    //如果自己没有出现过
+                    if(mySelf==null){
+                        //第一步先new
+                        mySelf = new MethodCallNode();
+                        mySelf.setSelf(chain.get(i));
+                        mySelf.setParent(myParent);
+                        //父加child
+                        myParent.addChild(mySelf);
+                        //操作坐标
+                        Pair<Integer,Integer> parentCoord = myParent.getCoord();
+                        myParent.setCoord(Pair.of(parentCoord.getKey(),parentCoord.getValue()+1));
+                        mySelf.setCoord(Pair.of(parentCoord.getKey()+1,0));
+
+                        map.put(callClassMethod,mySelf);
+                    }else{
+                        //如果自己出现过，说明已经在这棵树中的某一环，不需要重塑已有的枝丫
+                    }
+                }
+            }
+        }
+        return allRoots;
     }
 }
