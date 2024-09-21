@@ -1,5 +1,7 @@
 package org.kxl.home.project.analyze;
 
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import lombok.Data;
 import org.kxl.home.project.entity.MethodCall;
 
@@ -33,13 +35,13 @@ public class MethodDesc {
      * @param className
      * @param paramCount
      */
-    public void addCallMethodDescs(String callDesc, Map<String, String> fieldTypeMap, String className, Integer paramCount) {
+    public void addCallMethodDescs(String callDesc, Map<String, String> fieldTypeMap, Map<String,String> methodParamTypeMap, String className, Integer paramCount, MethodDeclaration md, MethodCallExpr mce) {
         if (callMethodDescs == null) {
             callMethodDescs = new java.util.ArrayList<>();
         }
         //PS 这里实在没办法传方法名带【签名】
         CallMethodDesc callMethodDesc = new CallMethodDesc(callDesc, paramCount);
-        callMethodDesc.parseClassMethod(className, fieldTypeMap);
+        callMethodDesc.parseClassMethod(className, methodName, fieldTypeMap, methodParamTypeMap, md, mce);
         callMethodDescs.add(callMethodDesc);
     }
 

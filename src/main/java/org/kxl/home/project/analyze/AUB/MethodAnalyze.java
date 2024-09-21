@@ -151,6 +151,7 @@ public class MethodAnalyze {
         boolean scopeExist = false;
         Set<String> duplicateMethodName = new HashSet<>();
         for (MethodDeclaration md : methods) {
+            Map<String,String> methodParamTypeMap = parseMethodVariables(md);
             List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
             String paramSignature = String.join(",", paramList);
             String method = md.getNameAsString();//DONE 这里要方法签名
@@ -175,11 +176,11 @@ public class MethodAnalyze {
                 if (scopeExist) {
                     // 这里的方法签名很难给，需要解析所有参数的类型，那就要扫描本方法内的变量定义，入参方法定义，以及成员变量定义，还有全局变量定义
                     String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
-                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className, paramCount);
+                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
                 } else {
                     //没有scope说明调用的就是本类内的方法
                     String rawMethod = "this." + mce.getNameAsString();
-                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, className, paramCount);
+                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
                 }
             }
         }
@@ -212,6 +213,19 @@ public class MethodAnalyze {
         if (serviceMap != null && !serviceMap.isEmpty()) {
             ret.putAll(serviceMap);
         }
+        return ret;
+    }
+
+    private static Map<String,String> parseMethodVariables(MethodDeclaration methodDeclaration){
+        Map<String,String> ret = new HashMap<>();
+        methodDeclaration.getParameters().forEach(p -> {
+            ret.put(p.getNameAsString(),p.getTypeAsString());
+        });
+
+        methodDeclaration.findAll(VariableDeclarator.class).forEach(vd -> {
+            ret.put(vd.getNameAsString(),vd.getTypeAsString());
+        });
+
         return ret;
     }
 }
