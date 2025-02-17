@@ -12,4 +12,6 @@ public interface MethodCallMapper {
     List<MethodCall> findByCallClassLikeMethodAndProjectName(@Param("callDesc") String callClassMethod, @Param("projectName") String projectName);
 
     Integer saveBatch(@Param("list") List<MethodCall> list);
+
+    Integer deleteByProjectName(@Param("projectName") String projectName);
 }
