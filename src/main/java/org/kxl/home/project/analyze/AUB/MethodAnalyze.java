@@ -9,6 +9,9 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.apache.ibatis.session.SqlSession;
 import org.kxl.home.project.analyze.ClassDesc;
 import org.kxl.home.project.analyze.MethodDesc;
@@ -30,14 +33,45 @@ public class MethodAnalyze {
 
     private static CompilationUnit cu = null;
 
+    private static CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver(
+            new ReflectionTypeSolver(),
+            new JavaParserTypeSolver(root)
+    );
+
+    // 记得先运行 mvn dependency:copy-dependencies -DoutputDirectory=lib
     static {
         if (root.contains("APP")) {
             projectName = projectName.replace("oe", "app");
         }
+        init();
+    }
 
+    private static void init() {
+        File pomPath = new File(root);
+        while(true) {
+            Long cnt = Arrays.stream(pomPath.list()).filter(f -> Objects.equals(f,"pom.xml")).count();
+            if(cnt == 0){
+                pomPath = pomPath.getParentFile();
+            }else {
+                break;
+            }
+        }
+        File libPath = new File(pomPath.getAbsolutePath(),"lib");
+        for(File lib: libPath.listFiles()){
+            try {
+                combinedTypeSolver.add(new JarTypeSolver(lib));
+            }catch (Exception e){
+                System.err.println(lib+" not found");
+                System.exit(-1);
+            }
+        }
         StaticJavaParser
                 .getParserConfiguration()
-                .setSymbolResolver(new JavaSymbolSolver(new CombinedTypeSolver()));
+                .setSymbolResolver(
+                        new JavaSymbolSolver(
+                                combinedTypeSolver
+                        )
+                );
     }
 
     private static List<File> traverseRoot(String root) {
@@ -98,9 +132,12 @@ public class MethodAnalyze {
                 System.err.println(fileName + " not match");
             }
         }
+        //先把原来的数据删除
+//        mapper.deleteByProjectName(projectName);
 
         int c = 0;
         List<MethodCall> methodCalls = new ArrayList<>();
+//        classDescs.clear();//TODO remove me，这里加这个完全为了调试，避免入库
         for (ClassDesc desc : classDescs) {
             ++c;
             methodCalls.addAll(desc.getMethodCalls(projectName));
