@@ -35,7 +35,7 @@ public class MethodCall {
     }
 
     public MethodCall(String className, String methodName, Integer methodParamCount, String methodParamType, String callMethod,
-                      String callClassMethod, Integer callMethodParamCount, String projectName) {
+                      String callClassMethod, Integer callMethodParamCount, String callMethodParamType, String projectName) {
         this.className = className;
         this.methodName = methodName;
         this.methodParamCount = methodParamCount;
@@ -43,6 +43,7 @@ public class MethodCall {
         this.callMethod = callMethod;
         this.callClassMethod = callClassMethod;
         this.callMethodParamCount = callMethodParamCount;
+        this.callMethodParamType = callMethodParamType;
         this.projectName = projectName;
     }
 

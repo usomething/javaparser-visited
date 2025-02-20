@@ -24,6 +24,8 @@ public class CallMethodDesc {
     //类方法调用表达式
     private String classMethod = "";
 
+    private String paramsType;
+
 //    private static Map<String, Pattern> patternMap = new HashMap<>();
 
     public CallMethodDesc(String rawMethod, Integer paramCount) {

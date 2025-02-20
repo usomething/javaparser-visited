@@ -34,9 +34,9 @@
     </select>
 
     <insert id="saveBatch" parameterType="java.util.List">
-        insert into autopart_method_call (class_name, method_name, method_param_count, method_param_type, call_method,call_class_method,call_method_param_count,project_name) values
+        insert into autopart_method_call (class_name, method_name, method_param_count, method_param_type, call_method,call_class_method,call_method_param_count,call_method_param_type,project_name) values
         <foreach collection="list" item="c" separator=",">
-            (#{c.className},#{c.methodName},#{c.methodParamCount},#{c.methodParamType},#{c.callMethod},#{c.callClassMethod},#{c.callMethodParamCount},#{c.projectName})
+            (#{c.className},#{c.methodName},#{c.methodParamCount},#{c.methodParamType},#{c.callMethod},#{c.callClassMethod},#{c.callMethodParamCount},#{c.callMethodParamType},#{c.projectName})
         </foreach>
     </insert>
 

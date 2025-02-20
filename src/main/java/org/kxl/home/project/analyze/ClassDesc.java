@@ -31,7 +31,7 @@ public class ClassDesc {
                 methodCalls.addAll(desc.getMethodCalls(className, projectName));
             }
         } else {
-            methodCalls.add(new MethodCall(className, null, 0, null, null, null, 0, projectName));
+            methodCalls.add(new MethodCall(className, null, 0, null, null, null, 0,null, projectName));
         }
         return methodCalls;
     }
