@@ -65,6 +65,19 @@ public class MethodAnalyze {
                 System.exit(-1);
             }
         }
+
+        List<File> jreLibs = FileUtil.recurSionDir(new File("C:\\Program Files\\Java\\jdk1.8.0_333\\jre\\lib"),null);
+        for(File lib : jreLibs){
+            if(lib.getPath().endsWith(".jar")){
+                try {
+                    combinedTypeSolver.add(new JarTypeSolver(lib));
+                }catch (Exception e){
+                    System.err.println(lib+" not found");
+                    System.exit(-1);
+                }
+            }
+        }
+
         StaticJavaParser
                 .getParserConfiguration()
                 .setSymbolResolver(
@@ -132,8 +145,13 @@ public class MethodAnalyze {
                 System.err.println(fileName + " not match");
             }
         }
+
+        for(String parserErr : MethodDesc.classMethodSet) {
+            System.out.println("\r\nparser error : "+parserErr);
+        }
+
         //先把原来的数据删除
-//        mapper.deleteByProjectName(projectName);
+        mapper.deleteByProjectName(projectName);
 
         int c = 0;
         List<MethodCall> methodCalls = new ArrayList<>();
@@ -196,7 +214,7 @@ public class MethodAnalyze {
             if (SHOW_DUPLICATED_METHOD_NAME) {
                 String methodSignature = className + "." + method + "(" + paramSignature + ")";
                 if (duplicateMethodName.contains(methodSignature)) {
-                    System.out.println(methodSignature);
+                    System.out.println("duplicateed : "+methodSignature);
                 } else {
                     duplicateMethodName.add(methodSignature);
                 }
