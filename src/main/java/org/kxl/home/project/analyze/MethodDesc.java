@@ -46,34 +46,9 @@ public class MethodDesc {
             //TODO 这里从resolvedMethodAndParamType解析出参数类型
             callMethodDesc.setParamsType(resolvedMethodAndParamType.substring(start+1,resolvedMethodAndParamType.length()-1));
         }catch (Exception e){
-            String classMethod = className+"."+md.getNameAsString()+" -> "+mce.getName().getParentNode().toString();
-            if(mce.getScope().isPresent()) {
-                if(mce.getScope().get().getDataKeys().size()>0) {
-                    for (DataKey key : mce.getScope().get().getDataKeys()) {
-                        Object type = mce.getScope().get().getData(key);
-                        if (type instanceof ResolvedReferenceType) {
-                            classMethod = "refer :" + classMethod;
-                        } else if (type instanceof ResolvedTypeVariable) {
-                            classMethod = "var : "+classMethod;
-                        } else if (type instanceof ResolvedLambdaConstraintType) {
-                            classMethod = "lambda : "+classMethod;
-                        } else {
-                            System.out.println("unknow type: " + type);
-                            System.exit(-1);
-                        }
-                    }
-                }else{
-                    classMethod = "keys size=0 :"+classMethod;
-                }
-            }else{
-                //这里有可能是父类的方法，不完全是，这里也有可能是找不到lombok
-                classMethod = "no scope : "+classMethod;
-            }
-            if(classMethod!=null) {
-                classMethodSet.add(classMethod);
-            }else{
-                e.printStackTrace();
-            }
+            String classMethod = className+"."+md.getNameAsString()+" -> "+mce.getName().getParentNode().toString()+" : "+mce.getRange().toString();
+            callMethodDesc.setParamsType("parse err");
+            classMethodSet.add(classMethod);
         }
         callMethodDescs.add(callMethodDesc);
     }
