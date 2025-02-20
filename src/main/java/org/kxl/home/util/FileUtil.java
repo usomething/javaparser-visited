@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +29,17 @@ public class FileUtil {
             raf.setLength(0);
         }
         for (String line : lines) {
-            raf.writeBytes(line);
+            raf.writeBytes(new String(line.getBytes(StandardCharsets.UTF_8),StandardCharsets.ISO_8859_1));
         }
         raf.close();
+    }
+
+    public static void renameFile(String oldFile,String newFile){
+        new File(oldFile).renameTo(new File(newFile));
+    }
+
+    public static void deleteFile(String file){
+        new File(file).delete();
     }
 
     public static List<String> readFile(String file){
