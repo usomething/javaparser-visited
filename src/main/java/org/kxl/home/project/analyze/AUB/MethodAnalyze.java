@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class MethodAnalyze {
 
-    private final static String root = "C:/workspace/OE/AutobestCheckout/src/main/java";
+    private final static String root = "C:/workspace/OE/AutoBestChina/src/main/java";
     private static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
     private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
@@ -231,11 +231,13 @@ public class MethodAnalyze {
                 if (scopeExist) {
                     // 这里的方法签名很难给，需要解析所有参数的类型，那就要扫描本方法内的变量定义，入参方法定义，以及成员变量定义，还有全局变量定义
                     String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
-                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
+//                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
+                    mdsc.addCallMethodDescs(rawMethod,paramCount,className,ci,md,mce);
                 } else {
                     //没有scope说明调用的就是本类内的方法
                     String rawMethod = "this." + mce.getNameAsString();
-                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
+//                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
+                    mdsc.addCallMethodDescs(rawMethod,paramCount,className,ci,md,mce);
                 }
             }
         }
