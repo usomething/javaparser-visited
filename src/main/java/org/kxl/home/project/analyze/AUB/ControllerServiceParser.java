@@ -7,7 +7,9 @@ import com.github.javaparser.ast.type.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+//由于staticJavaParser有resolve方法，可以解析节点，所以这个类也不需要了
 //这个类属于插件，是特别为AUB工程而定制的
+@Deprecated
 public class ControllerServiceParser {
 
     public static Map<String, String> parse(ClassOrInterfaceDeclaration ci) {

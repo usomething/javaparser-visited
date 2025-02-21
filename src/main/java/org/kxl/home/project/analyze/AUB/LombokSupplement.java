@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+//由于可以生成delombok源码，所以这个插件已经不需要了
+@Deprecated
 public class LombokSupplement {
 
     private final static String root = "C:/workspace/OE/AutoBestChina/src/main/java"//+"/com/autobest/backend/database/entities"

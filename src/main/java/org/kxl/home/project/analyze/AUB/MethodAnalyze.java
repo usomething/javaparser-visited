@@ -136,8 +136,8 @@ public class MethodAnalyze {
                     className = ci.getFullyQualifiedName().get();
                     ClassDesc classDesc = parseMethod(ci);
                     classDescs.add(classDesc);
-                    parseExtendsRelation(ci, extendsRelation);
-                    parseImplementsRelation(ci, implementsRelation);
+//                    parseExtendsRelation(ci, extendsRelation);
+//                    parseImplementsRelation(ci, implementsRelation);
                 } else if (Objects.equals(type, "Annotation")) {
                     AnnotationDeclaration an = (AnnotationDeclaration) n;
                     className = an.getFullyQualifiedName().get();
@@ -169,46 +169,15 @@ public class MethodAnalyze {
         }
     }
 
-    //key:子类，value:父类
-    private static void parseExtendsRelation(ClassOrInterfaceDeclaration ci, Map<String, String> extendsRelation) {
-        NodeList<ClassOrInterfaceType> extendsList = ci.getExtendedTypes();
-        if (extendsList.isNonEmpty()) {
-            String className = ci.getFullyQualifiedName().get();
-            extendsList.forEach(e -> {
-                if (!extendsRelation.containsKey(className)) {
-                    extendsRelation.put(className, e.getNameAsString());
-                } else {
-                    System.err.println("重复子类 : " + className);
-                }
-            });
-        }
-    }
-
-    //key:子类，value:接口们
-    public static void parseImplementsRelation(ClassOrInterfaceDeclaration ci, Map<String, List<String>> implementsRelation) {
-        NodeList<ClassOrInterfaceType> implementsList = ci.getImplementedTypes();
-        if (implementsList.isNonEmpty()) {
-            String className = ci.getFullyQualifiedName().get();
-            List<String> list = implementsList.stream().map(e -> e.getNameAsString()).collect(Collectors.toList());
-            if (!list.isEmpty()) {
-                if (implementsRelation.containsKey(className)) {
-                    System.err.println("重复实现接口类:" + className);
-                } else {
-                    implementsRelation.put(className, list);
-                }
-            }
-        }
-    }
-
     private static ClassDesc parseMethod(ClassOrInterfaceDeclaration ci) {
         String className = ci.getFullyQualifiedName().get();
         ClassDesc cd = new ClassDesc(className);
         List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
-        Map<String, String> filedTypeMap = parseVariables(ci);
+//        Map<String, String> filedTypeMap = parseVariables(ci);
         boolean scopeExist = false;
         Set<String> duplicateMethodName = new HashSet<>();
         for (MethodDeclaration md : methods) {
-            Map<String,String> methodParamTypeMap = parseMethodVariables(md);
+//            Map<String,String> methodParamTypeMap = parseMethodVariables(md);
             List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
             String paramSignature = String.join(",", paramList);
             String method = md.getNameAsString();//DONE 这里要方法签名
@@ -246,11 +215,45 @@ public class MethodAnalyze {
         return cd;
     }
 
-    /**
+/*
+
+    //key:子类，value:父类
+    private static void parseExtendsRelation(ClassOrInterfaceDeclaration ci, Map<String, String> extendsRelation) {
+        NodeList<ClassOrInterfaceType> extendsList = ci.getExtendedTypes();
+        if (extendsList.isNonEmpty()) {
+            String className = ci.getFullyQualifiedName().get();
+            extendsList.forEach(e -> {
+                if (!extendsRelation.containsKey(className)) {
+                    extendsRelation.put(className, e.getNameAsString());
+                } else {
+                    System.err.println("重复子类 : " + className);
+                }
+            });
+        }
+    }
+
+    //key:子类，value:接口们
+    public static void parseImplementsRelation(ClassOrInterfaceDeclaration ci, Map<String, List<String>> implementsRelation) {
+        NodeList<ClassOrInterfaceType> implementsList = ci.getImplementedTypes();
+        if (implementsList.isNonEmpty()) {
+            String className = ci.getFullyQualifiedName().get();
+            List<String> list = implementsList.stream().map(e -> e.getNameAsString()).collect(Collectors.toList());
+            if (!list.isEmpty()) {
+                if (implementsRelation.containsKey(className)) {
+                    System.err.println("重复实现接口类:" + className);
+                } else {
+                    implementsRelation.put(className, list);
+                }
+            }
+        }
+    }
+
+
      * 成员变量解析，把本类中所有的成员变量名位key，类型为value放入map中
      * @param ci
      * @return
-     */
+
+
     private static Map<String, String> parseVariables(ClassOrInterfaceDeclaration ci) {
         Map<String, String> ret = new HashMap<>();
         List<FieldDeclaration> vars = ci.findAll(FieldDeclaration.class).stream().collect(Collectors.toList());
@@ -287,4 +290,5 @@ public class MethodAnalyze {
 
         return ret;
     }
+    */
 }

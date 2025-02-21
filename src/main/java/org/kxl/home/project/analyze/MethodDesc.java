@@ -61,7 +61,7 @@ public class MethodDesc {
      * @param className
      * @param paramCount
      */
-    public void addCallMethodDescs(String callDesc, Map<String, String> fieldTypeMap, Map<String,String> methodParamTypeMap, String className, Integer paramCount, MethodDeclaration md, MethodCallExpr mce) {
+    /*public void addCallMethodDescs(String callDesc, Map<String, String> fieldTypeMap, Map<String,String> methodParamTypeMap, String className, Integer paramCount, MethodDeclaration md, MethodCallExpr mce) {
         if (callMethodDescs == null) {
             callMethodDescs = new java.util.ArrayList<>();
         }
@@ -69,7 +69,7 @@ public class MethodDesc {
         CallMethodDesc callMethodDesc = new CallMethodDesc(callDesc, paramCount);
         callMethodDesc.parseClassMethod(className, methodName, fieldTypeMap, methodParamTypeMap, md, mce);
         callMethodDescs.add(callMethodDesc);
-    }
+    }*/
 
     //生成要DB保存的类
     public List<MethodCall> getMethodCalls(String className, String projectName) {

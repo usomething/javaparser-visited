@@ -38,7 +38,7 @@ public class CallMethodDesc {
      * @param className
      * @param fieldTypeMap
      */
-    public void parseClassMethod(String className, String methodName, Map<String, String> fieldTypeMap, Map<String, String> methodParamTypeMap, MethodDeclaration md, MethodCallExpr mce) {
+    /*public void parseClassMethod(String className, String methodName, Map<String, String> fieldTypeMap, Map<String, String> methodParamTypeMap, MethodDeclaration md, MethodCallExpr mce) {
         if (fieldTypeMap == null || fieldTypeMap.isEmpty()) return;
 
         Map<String, String> paramTypeMap = new HashMap<>();
@@ -166,5 +166,5 @@ public class CallMethodDesc {
         Character c = str.charAt(0);
         return Objects.equals(Character.toLowerCase(c),c);
     }
-
+*/
 }
