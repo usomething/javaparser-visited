@@ -33,7 +33,11 @@ public class MethodAnalyze {
             ;
     private static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
-    private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
+    private final static Boolean SHOW_DUPLICATED_METHOD_NAME = false;
+
+    private final static Boolean SHOW_JAVA_FILE_NOT_MATCH = false;
+
+    private final static Boolean SHOW_RESOLVE_ERROR = false;
 
     private static CompilationUnit cu = null;
 
@@ -145,13 +149,17 @@ public class MethodAnalyze {
                     className = an.getFullyQualifiedName().get();
                 }
             }
-            if (!(chilNodes.size() == 1 && Objects.equals(fileName.replace("\\", ".").replace(".java", ""), className))) {
-                System.err.println(fileName + " not match");
+            if(SHOW_JAVA_FILE_NOT_MATCH) {
+                if (!(chilNodes.size() == 1 && Objects.equals(fileName.replace("\\", ".").replace(".java", ""), className))) {
+                    System.err.println(fileName + " not match");
+                }
             }
         }
 
-        for(String parserErr : MethodDesc.classMethodSet) {
-            System.out.println("\r\nparser error : "+parserErr);
+        if(SHOW_RESOLVE_ERROR) {
+            for (String parserErr : MethodDesc.classMethodSet) {
+                System.out.println("\r\nparser error : " + parserErr);
+            }
         }
 
         //先把原来的数据删除
