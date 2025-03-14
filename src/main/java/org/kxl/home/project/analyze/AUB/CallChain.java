@@ -110,7 +110,7 @@ public class CallChain {
             List<List<MethodCall>> newChains = parseOneChain(mapper, projectName, chain);
             //如果碰到null，代表已经是完整的链条了，头上加上START
             if (newChains == null) {
-                if (!Objects.equals(chain.get(0).getCallClassMethod(), "START")) {
+                if (!Objects.equals(chain.get(0).getClassName(), "START")) {
                     chain.add(0, new MethodCall("START", "",0));
                 }
                 result.add(chain);
