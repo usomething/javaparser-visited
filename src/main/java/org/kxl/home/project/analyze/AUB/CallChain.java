@@ -1,5 +1,6 @@
 package org.kxl.home.project.analyze.AUB;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ibatis.session.SqlSession;
 import org.kxl.home.project.entity.MethodCall;
@@ -16,20 +17,60 @@ public class CallChain {
     public static void main(String[] args) throws Exception {
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
         //这里是要改的
-        String projectName = "oe-online";
+        String projectName = "oe-admin";
         //这里也是要改的，注意：这里要找到对应接口的方法，实现类中的私有方法不行，自己手动上踪找到接口的定义方法（也就是实现类中的public方法）
         MethodCall[] innerMethods = new MethodCall[]{
-                /*new MethodCall("CommonServiceImpl.addOperationProcessHistory", 5),
-                new MethodCall("CommonServiceImpl.saveOrdersProcessHistory", 3),
-                new MethodCall("EmailServiceImpl.addOperationHistory",5),
-                new MethodCall("NotificationServiceImpl.addPaMsgOrderProcessHistory",4),
-                new MethodCall("OrderServiceImpl.addOperationHistory",5),
-                new MethodCall("OrderServiceImpl.insertIntoProcessHistory",5),
-                new MethodCall("OrderServiceImpl.insertIntoProcessHistory",7)*/
-                /*new MethodCall("CommonFunctionServiceImpl.insertIntoProcessHistory",8),
-                new MethodCall("NotificationServiceImpl.insertIntoProcessHistory",8),
-                new MethodCall("Notification2ServiceImpl.insertIntoProcessHistory",8)*/
-                new MethodCall("OrdersProcessHistoryRepository.saveAndFlush",1)
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","changeLMOrderLight",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateAdminAndDealerHasNew",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateAVerifyAddress",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateBName",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateBVerifyAddress",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateCancel",4),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateCancelIDAndReason",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateCancelPaymentConversion",5),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateDelivered",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateESD",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateExpeditedIndicatorType",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateFirstPendingOrder",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateFraudScoreCorrect",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateGPGManualLabelProcess",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateGroupId",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateHasOpen",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateHasUnRead",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateIsShip",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateIsShipAndStatus",4),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateManualChargeTotal",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateManualChargeTotalOnly",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateNoteHistory",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateNotification",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrderCreateShipmentIssueCount",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrdersEligibleInfo",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrderStatusId",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrderStatusIdAndProcessDate",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrderTypeAndHasNew",4),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrderTypeRelation",6),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateOrderVoidStatus",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updatePackageAction",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updatePaypalAuthor",4),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updatePaypalCapture",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updatePickupStatus",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateProcessDate",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateRiskLevel",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updaterOrderNum",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateShip",4),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateShipbyDate",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateShippingCostStatus",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateSName",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateTotalRelation",5),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateTrackingNo",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateTrackingNoEmpty",1),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateTransferOrderInfo",1),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateTryTime",1),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateUpdateToYYAndRApproved",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateVendorTotalAndNo",3),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateVerifyAddress",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateWorkStatusID",2),
+                new MethodCall("com.autobest.backend.database.repositories.OrderRepository","updateyourPayRelate",5),
         };
         List<List<MethodCall>> reverse = new ArrayList<>();
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
@@ -46,10 +87,10 @@ public class CallChain {
             System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         }
 
-        List<MethodCallNode> rootNodes = constructTree(reverse);
+        /*List<MethodCallNode> rootNodes = constructTree(reverse);
         for(MethodCallNode rootNode : rootNodes) {
             System.out.println(rootNode);
-        }
+        }*/
     }
 
     //将给定的List<List<MethodCall>> ret有限分裂出所有的调用头，直到头再也没有头，也即是根为止
