@@ -3,10 +3,8 @@ package org.kxl.home.project.analyze.AUB;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
@@ -24,7 +22,11 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 这是解析程序类，负责把一个工程的调用关系入库
+ */
 public class MethodAnalyze {
+
 
     private final static String root = "C:/workspace/OE/AutoBestChina/target/generated-sources/delombok"
 //            "C:/workspace/OE/AutoBestChina/src/main/java"
@@ -40,7 +42,7 @@ public class MethodAnalyze {
             new JavaParserTypeSolver(root)
     );
 
-    // 记得先运行 mvn dependency:copy-dependencies -DoutputDirectory=lib
+    //PS 记得先运行 mvn dependency:copy-dependencies -DoutputDirectory=lib
     static {
         if (root.contains("APP")) {
             projectName = projectName.replace("oe", "app");
@@ -93,16 +95,18 @@ public class MethodAnalyze {
         return FileUtil.recurSionDir(new File(root), null);
     }
 
+    /**
+     * 运行步骤：
+     * 1、记得第一步先在pom.xml里加入delombok配置，具体查询网络
+     * 2、运行 mvn dependency:copy-dependencies -DoutputDirectory=lib，这会在pom.xml同级目录生成一个lib文件夹，里面是运行需要用到的所有jar包，有同名文件夹和相同jar包也无所谓
+     * 3、最后再来运行这里的main方法
+    **/
     public static void main(String[] args) throws Exception {
         List<File> files = traverseRoot(root);
         int i = 0;
         List<ClassDesc> classDescs = new java.util.ArrayList<>();
         SqlSession sqlSession = MapperUtil.getSqlSession(true);
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
-
-        // 还需要解析继承关系和接口实现关系
-        Map<String, String> extendsRelation = new HashMap<>();//继承关系肯定一对一
-        Map<String, List<String>> implementsRelation = new HashMap<>();//接口实现关系是一对多
 
         for (File file : files) {
             if (!file.getName().endsWith(".java")) continue;
@@ -136,8 +140,6 @@ public class MethodAnalyze {
                     className = ci.getFullyQualifiedName().get();
                     ClassDesc classDesc = parseMethod(ci);
                     classDescs.add(classDesc);
-//                    parseExtendsRelation(ci, extendsRelation);
-//                    parseImplementsRelation(ci, implementsRelation);
                 } else if (Objects.equals(type, "Annotation")) {
                     AnnotationDeclaration an = (AnnotationDeclaration) n;
                     className = an.getFullyQualifiedName().get();
@@ -173,11 +175,9 @@ public class MethodAnalyze {
         String className = ci.getFullyQualifiedName().get();
         ClassDesc cd = new ClassDesc(className);
         List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
-//        Map<String, String> filedTypeMap = parseVariables(ci);
         boolean scopeExist = false;
         Set<String> duplicateMethodName = new HashSet<>();
         for (MethodDeclaration md : methods) {
-//            Map<String,String> methodParamTypeMap = parseMethodVariables(md);
             List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
             String paramSignature = String.join(",", paramList);
             String method = md.getNameAsString();//DONE 这里要方法签名
@@ -202,93 +202,14 @@ public class MethodAnalyze {
                 if (scopeExist) {
                     // 这里的方法签名很难给，需要解析所有参数的类型，那就要扫描本方法内的变量定义，入参方法定义，以及成员变量定义，还有全局变量定义
                     String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
-//                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
                     mdsc.addCallMethodDescs(rawMethod,paramCount,className,ci,md,mce);
                 } else {
                     //没有scope说明调用的就是本类内的方法
                     String rawMethod = "this." + mce.getNameAsString();
-//                    mdsc.addCallMethodDescs(rawMethod, filedTypeMap, methodParamTypeMap, className, paramCount, md, mce);
                     mdsc.addCallMethodDescs(rawMethod,paramCount,className,ci,md,mce);
                 }
             }
         }
         return cd;
     }
-
-/*
-
-    //key:子类，value:父类
-    private static void parseExtendsRelation(ClassOrInterfaceDeclaration ci, Map<String, String> extendsRelation) {
-        NodeList<ClassOrInterfaceType> extendsList = ci.getExtendedTypes();
-        if (extendsList.isNonEmpty()) {
-            String className = ci.getFullyQualifiedName().get();
-            extendsList.forEach(e -> {
-                if (!extendsRelation.containsKey(className)) {
-                    extendsRelation.put(className, e.getNameAsString());
-                } else {
-                    System.err.println("重复子类 : " + className);
-                }
-            });
-        }
-    }
-
-    //key:子类，value:接口们
-    public static void parseImplementsRelation(ClassOrInterfaceDeclaration ci, Map<String, List<String>> implementsRelation) {
-        NodeList<ClassOrInterfaceType> implementsList = ci.getImplementedTypes();
-        if (implementsList.isNonEmpty()) {
-            String className = ci.getFullyQualifiedName().get();
-            List<String> list = implementsList.stream().map(e -> e.getNameAsString()).collect(Collectors.toList());
-            if (!list.isEmpty()) {
-                if (implementsRelation.containsKey(className)) {
-                    System.err.println("重复实现接口类:" + className);
-                } else {
-                    implementsRelation.put(className, list);
-                }
-            }
-        }
-    }
-
-
-     * 成员变量解析，把本类中所有的成员变量名位key，类型为value放入map中
-     * @param ci
-     * @return
-
-
-    private static Map<String, String> parseVariables(ClassOrInterfaceDeclaration ci) {
-        Map<String, String> ret = new HashMap<>();
-        List<FieldDeclaration> vars = ci.findAll(FieldDeclaration.class).stream().collect(Collectors.toList());
-        if (vars != null && !vars.isEmpty()) {
-            for (FieldDeclaration fd : vars) {
-                List<VariableDeclarator> vds = fd.getVariables();
-                for (VariableDeclarator vd : vds) {
-                    ret.put(vd.getNameAsString(), vd.getTypeAsString());
-                }
-            }
-        }
-        //这里处理本工程特有的repository
-        Map<String, String> repositoryMap = ServiceRepositoryParser.parse(ci);
-        if (repositoryMap != null && !repositoryMap.isEmpty()) {
-            ret.putAll(repositoryMap);
-        }
-        //这里处理本工程特有的service
-        Map<String, String> serviceMap = ControllerServiceParser.parse(ci);
-        if (serviceMap != null && !serviceMap.isEmpty()) {
-            ret.putAll(serviceMap);
-        }
-        return ret;
-    }
-
-    private static Map<String,String> parseMethodVariables(MethodDeclaration methodDeclaration){
-        Map<String,String> ret = new HashMap<>();
-        methodDeclaration.getParameters().forEach(p -> {
-            ret.put(p.getNameAsString(),p.getTypeAsString());
-        });
-
-        methodDeclaration.findAll(VariableDeclarator.class).forEach(vd -> {
-            ret.put(vd.getNameAsString(),vd.getTypeAsString());
-        });
-
-        return ret;
-    }
-    */
 }

@@ -5,6 +5,9 @@ import org.kxl.home.project.entity.MethodCall;
 
 import java.util.List;
 
+/**
+ * 这是解析一个java类就生成一个ClassDesc的类，methodDescs是所有内部定义方法的描述
+ */
 @Data
 public class ClassDesc {
     //java文件中的 类名

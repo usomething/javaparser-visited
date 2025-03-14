@@ -12,6 +12,9 @@ import org.kxl.home.project.entity.MethodCall;
 
 import java.util.*;
 
+/**
+ * 这是一个类内部公有/私有方法，一个方法有调用多个CallMethodDesc方法
+ */
 @Data
 public class MethodDesc {
     //方法名
@@ -32,6 +35,7 @@ public class MethodDesc {
     }
 
     //ci是类，md是类中的方法，mce是方法中调用的方法
+    //这个方法就是本次修改的核心，核心方法MethodCallExpr.resolve().getQualifiedSignature()，能解析出参数类型
     public void addCallMethodDescs(String callDesc, Integer paramCount, String className, ClassOrInterfaceDeclaration ci, MethodDeclaration md, MethodCallExpr mce){
         if (callMethodDescs == null) {
             callMethodDescs = new java.util.ArrayList<>();
@@ -52,24 +56,6 @@ public class MethodDesc {
         }
         callMethodDescs.add(callMethodDesc);
     }
-
-    /**
-     * 加入调用链，被调用的方法们都进入callMethodDescs
-     *
-     * @param callDesc
-     * @param fieldTypeMap
-     * @param className
-     * @param paramCount
-     */
-    /*public void addCallMethodDescs(String callDesc, Map<String, String> fieldTypeMap, Map<String,String> methodParamTypeMap, String className, Integer paramCount, MethodDeclaration md, MethodCallExpr mce) {
-        if (callMethodDescs == null) {
-            callMethodDescs = new java.util.ArrayList<>();
-        }
-        //PS 这里实在没办法传方法名带【签名】
-        CallMethodDesc callMethodDesc = new CallMethodDesc(callDesc, paramCount);
-        callMethodDesc.parseClassMethod(className, methodName, fieldTypeMap, methodParamTypeMap, md, mce);
-        callMethodDescs.add(callMethodDesc);
-    }*/
 
     //生成要DB保存的类
     public List<MethodCall> getMethodCalls(String className, String projectName) {

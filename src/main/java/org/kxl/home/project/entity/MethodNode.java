@@ -5,6 +5,9 @@ import lombok.Data;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 这是画图需要的node描述
+ */
 @Data
 public class MethodNode {
 

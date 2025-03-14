@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 这是要入库的的记录，一条代表一个方法调用
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
