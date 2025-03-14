@@ -7,6 +7,8 @@
     <resultMap id="methodCall" type="org.kxl.home.project.entity.MethodCall">
         <result property="id" column="id"/>
         <result property="className" column="class_name"/>
+        <result property="parentClass" column="parent_class"/>
+        <result property="implementsClasses" column="implements_classes"/>
         <result property="methodName" column="method_name"/>
         <result property="methodParamCount" column="method_param_count"/>
         <result property="methodParamType" column="method_param_type"/>
@@ -23,10 +25,14 @@
     </delete>
     
     <select id="findByCallClassMethodAndProjectName" resultMap="methodCall">
-        select * from autopart_method_call c where project_name=#{projectName} and c.call_method_param_count=#{paramCount} and c.call_class_method in
+        select
+            min(c.id) as id,c.class_name,c.parent_class,c.implements_classes,c.method_name,c.method_param_count,c.method_param_type,
+            c.call_method,c.call_class_method,c.call_method_param_count,c.call_method_param_type,c.project_name
+        from autopart_method_call c where project_name=#{projectName} and c.call_method_param_count=#{paramCount} and c.call_class_method in
         <foreach item="desc" index="index" collection="callDescs" open="(" separator="," close=")">
             #{desc}
         </foreach>
+            group by c.class_name,c.parent_class,c.implements_classes,c.method_name,c.method_param_count,c.method_param_type,c.call_method,c.call_class_method,c.call_method_param_type
     </select>
 
     <select id="findByCallClassLikeMethodAndProjectName" resultMap="methodCall">
@@ -34,9 +40,9 @@
     </select>
 
     <insert id="saveBatch" parameterType="java.util.List">
-        insert into autopart_method_call (class_name, method_name, method_param_count, method_param_type, call_method,call_class_method,call_method_param_count,call_method_param_type,project_name) values
+        insert into autopart_method_call (class_name, parent_class, implements_classes, method_name, method_param_count, method_param_type, call_method,call_class_method,call_method_param_count,call_method_param_type,project_name) values
         <foreach collection="list" item="c" separator=",">
-            (#{c.className},#{c.methodName},#{c.methodParamCount},#{c.methodParamType},#{c.callMethod},#{c.callClassMethod},#{c.callMethodParamCount},#{c.callMethodParamType},#{c.projectName})
+            (#{c.className},#{c.parentClass},#{c.implementsClasses},#{c.methodName},#{c.methodParamCount},#{c.methodParamType},#{c.callMethod},#{c.callClassMethod},#{c.callMethodParamCount},#{c.callMethodParamType},#{c.projectName})
         </foreach>
     </insert>
 

@@ -1,13 +1,10 @@
 package org.kxl.home.project.analyze;
 
-import com.github.javaparser.ast.DataKey;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.resolution.types.ResolvedLambdaConstraintType;
-import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedTypeVariable;
 import lombok.Data;
+import org.apache.commons.collections4.CollectionUtils;
 import org.kxl.home.project.entity.MethodCall;
 
 import java.util.*;
@@ -58,11 +55,15 @@ public class MethodDesc {
     }
 
     //生成要DB保存的类
-    public List<MethodCall> getMethodCalls(String className, String projectName) {
+    public List<MethodCall> getMethodCalls(String className, String projectName,String parentClass,List<String> implementsClasses) {
         List<MethodCall> ret = new ArrayList<>();
+        String implementsClassesStr = null;
+        if(CollectionUtils.isNotEmpty(implementsClasses)){
+            implementsClassesStr = String.join(",",implementsClasses);
+        }
         if(callMethodDescs!=null) {
             for(CallMethodDesc callDesc : callMethodDescs) {
-                ret.add(new MethodCall(className, methodName, paramCount, paramTypes, callDesc.getRawMethod(), callDesc.getClassMethod(), callDesc.getParamCount(), callDesc.getParamsType(), projectName));
+                ret.add(new MethodCall(className, parentClass, implementsClassesStr, methodName, paramCount, paramTypes, callDesc.getRawMethod(), callDesc.getClassMethod(), callDesc.getParamCount(), callDesc.getParamsType(), projectName));
             }
         }
         return ret;

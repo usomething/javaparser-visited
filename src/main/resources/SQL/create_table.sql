@@ -3,6 +3,8 @@ drop table autopart_method_call;
 CREATE TABLE `autopart_method_call` (
   `id` int NOT NULL AUTO_INCREMENT,
   `class_name` varchar(255) DEFAULT NULL,
+  `parent_class` varchar(255) DEFAULT NULL,
+  `implements_classes` text DEFAULT NULL,
   `method_name` varchar(255) DEFAULT NULL,
   `method_param_count` int DEFAULT NULL,
   `method_param_type` varchar(2048) DEFAULT NULL,

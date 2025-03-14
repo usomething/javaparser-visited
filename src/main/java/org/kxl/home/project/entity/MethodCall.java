@@ -16,6 +16,10 @@ public class MethodCall {
 
     private String className;
 
+    private String parentClass;
+
+    private String implementsClasses;
+
     private String methodName;
 
     private Integer methodParamCount;
@@ -37,9 +41,11 @@ public class MethodCall {
         this.callMethodParamCount = callMethodParamCount;
     }
 
-    public MethodCall(String className, String methodName, Integer methodParamCount, String methodParamType, String callMethod,
+    public MethodCall(String className, String parentClass, String implementsClasses, String methodName, Integer methodParamCount, String methodParamType, String callMethod,
                       String callClassMethod, Integer callMethodParamCount, String callMethodParamType, String projectName) {
         this.className = className;
+        this.parentClass = parentClass;
+        this.implementsClasses = implementsClasses;
         this.methodName = methodName;
         this.methodParamCount = methodParamCount;
         this.methodParamType = methodParamType;
@@ -56,7 +62,7 @@ public class MethodCall {
 
     public MethodCall getCallerClass() {
         MethodCall caller = new MethodCall();
-        caller.setCallClassMethod(className.substring(className.lastIndexOf(".") + 1) + "." + methodName);
+        caller.setCallClassMethod(className + "." + methodName);
         caller.setCallMethodParamCount(methodParamCount);
         return caller;
     }

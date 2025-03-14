@@ -174,6 +174,14 @@ public class MethodAnalyze {
     private static ClassDesc parseMethod(ClassOrInterfaceDeclaration ci) {
         String className = ci.getFullyQualifiedName().get();
         ClassDesc cd = new ClassDesc(className);
+        //设置父类
+        if(ci.getExtendedTypes().isNonEmpty()) {
+            cd.setParentClass(Optional.ofNullable(ci.getExtendedTypes(0)).map(p -> p.resolve().asReferenceType().getQualifiedName()).orElse(null));
+        }
+        //设置实现接口
+        if(ci.getImplementedTypes().isNonEmpty()){
+            cd.setImplementsClasses(ci.getImplementedTypes().stream().map(i->i.resolve().asReferenceType().getQualifiedName()).collect(Collectors.toList()));
+        }
         List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
         boolean scopeExist = false;
         Set<String> duplicateMethodName = new HashSet<>();
