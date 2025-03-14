@@ -28,11 +28,15 @@
         select
             min(c.id) as id,c.class_name,c.parent_class,c.implements_classes,c.method_name,c.method_param_count,c.method_param_type,
             c.call_method,c.call_class_method,c.call_method_param_count,c.call_method_param_type,c.project_name
-        from autopart_method_call c where project_name=#{projectName} and c.call_method_param_count=#{paramCount} and c.call_class_method in
+        from autopart_method_call c where project_name=#{projectName} and c.call_method_param_count=#{callMethodParamCount} and c.call_class_method in
         <foreach item="desc" index="index" collection="callDescs" open="(" separator="," close=")">
             #{desc}
         </foreach>
             group by c.class_name,c.parent_class,c.implements_classes,c.method_name,c.method_param_count,c.method_param_type,c.call_method,c.call_class_method,c.call_method_param_type
+    </select>
+    
+    <select id="findByClassNameAndMethodNameAndParamCount" resultMap="methodCall">
+        select * from autopart_method_call c where c.class_name=#{className} and method_name=#{methodName} and method_param_count=#{methodParamCount} and project_name=#{projectName}
     </select>
 
     <select id="findByCallClassLikeMethodAndProjectName" resultMap="methodCall">

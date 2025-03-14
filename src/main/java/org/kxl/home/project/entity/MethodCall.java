@@ -3,6 +3,7 @@ package org.kxl.home.project.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 这是要入库的的记录，一条代表一个方法调用
@@ -36,9 +37,10 @@ public class MethodCall {
 
     private String projectName;
 
-    public MethodCall(String callClassMethod, Integer callMethodParamCount) {
-        this.callClassMethod = callClassMethod;
-        this.callMethodParamCount = callMethodParamCount;
+    public MethodCall(String className,String methodName,Integer methodParamCount){
+        this.className = className;
+        this.methodName = methodName;
+        this.methodParamCount = methodParamCount;
     }
 
     public MethodCall(String className, String parentClass, String implementsClasses, String methodName, Integer methodParamCount, String methodParamType, String callMethod,
@@ -56,15 +58,29 @@ public class MethodCall {
         this.projectName = projectName;
     }
 
-    public String getCaller() {
-        return className.substring(className.lastIndexOf(".") + 1) + "." + methodName;
+    public MethodCall getCallerClass() {
+        MethodCall m = new MethodCall();
+        m.setId(id);
+        m.setClassName(className);
+        m.setParentClass(parentClass);
+        m.setImplementsClasses(implementsClasses);
+        m.setMethodName(methodName);
+        m.setMethodParamCount(methodParamCount);
+        m.setMethodParamType(methodParamType);
+        m.setCallMethod(callMethod);
+        m.setCallClassMethod(callClassMethod);
+        m.setCallMethodParamCount(callMethodParamCount);
+        m.setCallMethodParamType(callMethodParamType);
+        m.setProjectName(projectName);
+        return m;
     }
 
-    public MethodCall getCallerClass() {
-        MethodCall caller = new MethodCall();
-        caller.setCallClassMethod(className + "." + methodName);
-        caller.setCallMethodParamCount(methodParamCount);
-        return caller;
+    public String getSimpleClassName(){
+        if(StringUtils.isNotBlank(className) && className.indexOf(".")>0){
+            int dotPos = className.lastIndexOf(".");
+            return className.substring(dotPos+1);
+        }
+        return className;
     }
 
 }

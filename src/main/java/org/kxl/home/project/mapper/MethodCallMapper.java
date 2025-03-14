@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface MethodCallMapper {
 
-    List<MethodCall> findByCallClassMethodAndProjectName(@Param("callDescs") List<String> callClassMethod, @Param("projectName") String projectName, @Param("paramCount") Integer paramCount);
+    List<MethodCall> findByCallClassMethodAndProjectName(@Param("callDescs") List<String> callClassMethod, @Param("projectName") String projectName, @Param("callMethodParamCount") Integer callMethodParamCount);
+
+    List<MethodCall> findByClassNameAndMethodNameAndParamCount(@Param("className")String className, @Param("methodName")String methodName, @Param("methodParamCount")Integer methodParamCount, @Param("projectName") String projectName);
 
     List<MethodCall> findByCallClassLikeMethodAndProjectName(@Param("callDesc") String callClassMethod, @Param("projectName") String projectName);
 

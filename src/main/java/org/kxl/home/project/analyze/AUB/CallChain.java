@@ -34,15 +34,16 @@ public class CallChain {
         List<List<MethodCall>> reverse = new ArrayList<>();
         MethodCallMapper mapper = sqlSession.getMapper(MethodCallMapper.class);
         for (MethodCall innerMethod : innerMethods) {
-            List<MethodCall> inn = new ArrayList<>();
-            inn.add(innerMethod);
+            List<MethodCall> inn = mapper.findByClassNameAndMethodNameAndParamCount(innerMethod.getClassName(),innerMethod.getMethodName(),innerMethod.getMethodParamCount(),projectName);
             List<List<MethodCall>> result = new ArrayList<>();
             result.add(inn);
             List<List<MethodCall>> chainDesc = parseRelations(mapper, projectName, result);
             for (List<MethodCall> oneChain : chainDesc) {
-                System.out.println(oneChain.stream().map(m -> m.getCallClassMethod()).collect(Collectors.joining(" ->")));
+                System.out.println(oneChain.stream().map(m -> String.format("%s.%s[%s]",m.getSimpleClassName(),m.getMethodName(),m.getMethodParamCount())).collect(Collectors.joining("-> ")));
                 reverse.add(ListUtil.reverse(oneChain));
             }
+
+            System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         }
 
         List<MethodCallNode> rootNodes = constructTree(reverse);
@@ -58,15 +59,18 @@ public class CallChain {
         List<List<MethodCall>> result = new ArrayList<>();
         Boolean existUnEndedChain = false;
         for (List<MethodCall> chain : ret) {
-            String chainStr = chain.stream().map(mc -> mc.getCallClassMethod()).collect(Collectors.joining(","));
-            if (chainSet.contains(chainStr)) continue;
+            String chainStr = chain.stream().map(mc -> String.format("%s.%s[%s]",mc.getClassName(),mc.getMethodName(),mc.getMethodParamCount())).collect(Collectors.joining(","));
+            if (chainSet.contains(chainStr)) {
+                System.err.println("这里出现了重复: "+chainStr);
+                continue;
+            }
             chainSet.add(chainStr);
             //一分多
             List<List<MethodCall>> newChains = parseOneChain(mapper, projectName, chain);
             //如果碰到null，代表已经是完整的链条了，头上加上START
             if (newChains == null) {
                 if (!Objects.equals(chain.get(0).getCallClassMethod(), "START")) {
-                    chain.add(0, new MethodCall("START", -1));
+                    chain.add(0, new MethodCall("START", "",0));
                 }
                 result.add(chain);
             } else {
@@ -92,12 +96,12 @@ public class CallChain {
      */
     private static List<List<MethodCall>> parseOneChain(MethodCallMapper mapper, String projectName, List<MethodCall> oneChain) {
         MethodCall innerMethod = oneChain.get(0);
-        Integer paramCount = oneChain.get(0).getCallMethodParamCount();
         if (Objects.equals(innerMethod.getCallClassMethod(), "START")) {
             return null;
         }
+        Integer methodParamCount = innerMethod.getMethodParamCount();
         List<List<MethodCall>> ret = null;
-        List<MethodCall> mcs = mapper.findByCallClassMethodAndProjectName(generateInnerMethod(innerMethod), projectName, paramCount);
+        List<MethodCall> mcs = mapper.findByCallClassMethodAndProjectName(generateInnerMethod(innerMethod), projectName, methodParamCount);
         if (mcs != null && mcs.size() > 0) {
             ret = new ArrayList<>();
             for (MethodCall mc : mcs) {
@@ -118,11 +122,16 @@ public class CallChain {
 
     private static List<String> generateInnerMethod(MethodCall innerMethod) {
         List<String> list = new ArrayList<>();
-        list.add(innerMethod.getCallClassMethod());
-        String[] split = innerMethod.getCallClassMethod().split("\\.");
-        if (split[0].endsWith("Impl")) {
-            list.add(split[0].replace("Impl", "") + "." + split[1]);
+        list.add(String.format("%s.%s",innerMethod.getClassName(),innerMethod.getMethodName()));
+        if(StringUtils.isNotBlank(innerMethod.getParentClass())){
+            list.add(String.format("%s.%s",innerMethod.getParentClass(),innerMethod.getMethodName()));
         }
+        if(StringUtils.isNotBlank(innerMethod.getImplementsClasses())){
+            for(String ic : innerMethod.getImplementsClasses().split(",")){
+                list.add(String.format("%s.%s",ic,innerMethod.getMethodName()));
+            }
+        }
+
         return list;
     }
 
