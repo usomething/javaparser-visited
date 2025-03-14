@@ -80,7 +80,7 @@ public class CallChain {
             result.add(inn);
             List<List<MethodCall>> chainDesc = parseRelations(mapper, projectName, result);
             for (List<MethodCall> oneChain : chainDesc) {
-                System.out.println(oneChain.stream().map(m -> String.format("%s.%s[%s]",m.getSimpleClassName(),m.getMethodName(),m.getMethodParamCount())).collect(Collectors.joining("-> ")));
+                System.out.println(ListUtil.reverse(oneChain).stream().map(m -> String.format("%s.%s[%s]",m.getSimpleClassName(),m.getMethodName(),m.getMethodParamCount())).collect(Collectors.joining(" <-")));
                 reverse.add(ListUtil.reverse(oneChain));
             }
 
