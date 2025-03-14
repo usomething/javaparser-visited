@@ -65,6 +65,8 @@ public class MethodDesc {
             for(CallMethodDesc callDesc : callMethodDescs) {
                 ret.add(new MethodCall(className, parentClass, implementsClassesStr, methodName, paramCount, paramTypes, callDesc.getRawMethod(), callDesc.getClassMethod(), callDesc.getParamCount(), callDesc.getParamsType(), projectName));
             }
+        }else{
+            ret.add(new MethodCall(className, parentClass, implementsClassesStr, methodName, paramCount, paramTypes, null, null, null, null, projectName));
         }
         return ret;
     }
