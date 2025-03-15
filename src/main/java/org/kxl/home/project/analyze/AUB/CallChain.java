@@ -102,7 +102,7 @@ public class CallChain {
         for (List<MethodCall> chain : ret) {
             String chainStr = chain.stream().map(mc -> String.format("%s.%s[%s]",mc.getClassName(),mc.getMethodName(),mc.getMethodParamCount())).collect(Collectors.joining(","));
             if (chainSet.contains(chainStr)) {
-                System.err.println("这里出现了重复: "+chainStr);
+                System.err.println("这根链条出现了重复: "+chainStr);
                 continue;
             }
             chainSet.add(chainStr);
