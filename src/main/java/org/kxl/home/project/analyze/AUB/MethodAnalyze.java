@@ -28,14 +28,14 @@ import java.util.stream.Collectors;
 public class MethodAnalyze {
 
 
-    private final static String root = "C:/workspace/OE/AutobestCheckout/target/generated-sources/delombok";
+    private final static String root = "C:/workspace/OE/AutoBestChina/target/generated-sources/delombok";
     private static String projectName = root.contains("AutoBestChina") ? "oe-admin" : root.contains("AutobestCheckout") ? "oe-online" : "unknow";
 
-    private final static Boolean SHOW_DUPLICATED_METHOD_NAME = false;
+    private final static Boolean SHOW_DUPLICATED_METHOD_NAME = true;
 
     private final static Boolean SHOW_JAVA_FILE_NOT_MATCH = false;
 
-    private final static Boolean SHOW_RESOLVE_ERROR = false;
+    private final static Boolean SHOW_RESOLVE_ERROR = true;
 
     private static CompilationUnit cu = null;
 
@@ -97,11 +97,12 @@ public class MethodAnalyze {
         return FileUtil.recurSionDir(new File(root), null);
     }
 
-    /**
+     /**
      * 运行步骤：
      * 1、记得第一步先在pom.xml里加入delombok配置，具体查询网络
      * 2、运行 mvn dependency:copy-dependencies -DoutputDirectory=lib，这会在pom.xml同级目录生成一个lib文件夹，里面是运行需要用到的所有jar包，有同名文件夹和相同jar包也无所谓
-     * 3、最后再来运行这里的main方法
+     * 3、运行mvn clean package，这会生成delombok的源码
+     * 4、最后再来运行这里的main方法
     **/
     public static void main(String[] args) throws Exception {
         List<File> files = traverseRoot(root);
@@ -140,8 +141,8 @@ public class MethodAnalyze {
                 } else if (Objects.equals(type, "Class")) {
                     ClassOrInterfaceDeclaration ci = (ClassOrInterfaceDeclaration) n;
                     className = ci.getFullyQualifiedName().get();
-                    ClassDesc classDesc = parseMethod(ci);
-                    classDescs.add(classDesc);
+                    List<ClassDesc> classDescList = parseMethod(ci);
+                    classDescs.addAll(classDescList);
                 } else if (Objects.equals(type, "Annotation")) {
                     AnnotationDeclaration an = (AnnotationDeclaration) n;
                     className = an.getFullyQualifiedName().get();
@@ -177,53 +178,59 @@ public class MethodAnalyze {
         }
     }
 
-    private static ClassDesc parseMethod(ClassOrInterfaceDeclaration ci) {
-        String className = ci.getFullyQualifiedName().get();
-        ClassDesc cd = new ClassDesc(className);
-        //设置父类
-        if(ci.getExtendedTypes().isNonEmpty()) {
-            cd.setParentClass(Optional.ofNullable(ci.getExtendedTypes(0)).map(p -> p.resolve().asReferenceType().getQualifiedName()).orElse(null));
-        }
-        //设置实现接口
-        if(ci.getImplementedTypes().isNonEmpty()){
-            cd.setImplementsClasses(ci.getImplementedTypes().stream().map(i->i.resolve().asReferenceType().getQualifiedName()).collect(Collectors.toList()));
-        }
-        List<MethodDeclaration> methods = ci.findAll(MethodDeclaration.class).stream().collect(Collectors.toList());
-        boolean scopeExist = false;
+    private static List<ClassDesc> parseMethod(ClassOrInterfaceDeclaration ciTop) {
+        List<ClassOrInterfaceDeclaration> allClasses = ciTop.findAll(ClassOrInterfaceDeclaration.class).stream().collect(Collectors.toList());
         Set<String> duplicateMethodName = new HashSet<>();
-        for (MethodDeclaration md : methods) {
-            List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
-            String paramSignature = String.join(",", paramList);
-            String method = md.getNameAsString();//DONE 这里要方法签名
-            //如果有重复方法，旧显示出来，这里并没什么逻辑
-            if (SHOW_DUPLICATED_METHOD_NAME) {
-                String methodSignature = className + "." + method + "(" + paramSignature + ")";
-                if (duplicateMethodName.contains(methodSignature)) {
-                    System.out.println("duplicateed : "+methodSignature);
-                } else {
-                    duplicateMethodName.add(methodSignature);
+        List<ClassDesc> classDescList = new ArrayList<>();
+
+        for(ClassOrInterfaceDeclaration ci : allClasses) {
+            String className = ci.getFullyQualifiedName().get();
+            ClassDesc cd = new ClassDesc(className);
+            //设置父类
+            if (ci.getExtendedTypes().isNonEmpty()) {
+                cd.setParentClass(Optional.ofNullable(ci.getExtendedTypes(0)).map(p -> p.resolve().asReferenceType().getQualifiedName()).orElse(null));
+            }
+            //设置实现接口
+            if (ci.getImplementedTypes().isNonEmpty()) {
+                cd.setImplementsClasses(ci.getImplementedTypes().stream().map(i -> i.resolve().asReferenceType().getQualifiedName()).collect(Collectors.toList()));
+            }
+            List<MethodDeclaration> methods = ci.getMethods();
+            boolean scopeExist = false;
+            for (MethodDeclaration md : methods) {
+                List<String> paramList = md.getParameters().stream().map(p -> p.getType().asString()).collect(Collectors.toList());
+                String paramSignature = String.join(",", paramList);
+                String method = md.getNameAsString();//DONE 这里要方法签名
+                //如果有重复方法，旧显示出来，这里并没什么逻辑
+                if (SHOW_DUPLICATED_METHOD_NAME) {
+                    String methodSignature = className + "." + method + "(" + paramSignature + ")";
+                    if (duplicateMethodName.contains(methodSignature)) {
+                        System.out.println("duplicateed : " + methodSignature);
+                    } else {
+                        duplicateMethodName.add(methodSignature);
+                    }
+                }
+                duplicateMethodName.add(method);
+                MethodDesc mdsc = new MethodDesc(method, paramList.size(), paramSignature);
+                //把本类中所有定义的方法都加入到methodDescs这个集合中
+                cd.addMethodDesc(mdsc);
+                List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
+                for (MethodCallExpr mce : methodCallExprs) {
+                    //scope 是这个方法的主人，比如a.x(15)，方法是x,参数是15，而主人是a
+                    scopeExist = mce.getScope().isPresent();
+                    Integer paramCount = mce.getArguments().size();
+                    if (scopeExist) {
+                        // 这里的方法签名很难给，需要解析所有参数的类型，那就要扫描本方法内的变量定义，入参方法定义，以及成员变量定义，还有全局变量定义
+                        String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
+                        mdsc.addCallMethodDescs(rawMethod, paramCount, className, ci, md, mce);
+                    } else {
+                        //没有scope说明调用的就是本类内的方法
+                        String rawMethod = "this." + mce.getNameAsString();
+                        mdsc.addCallMethodDescs(rawMethod, paramCount, className, ci, md, mce);
+                    }
                 }
             }
-            duplicateMethodName.add(method);
-            MethodDesc mdsc = new MethodDesc(method, paramList.size(), paramSignature);
-            //把本类中所有定义的方法都加入到methodDescs这个集合中
-            cd.addMethodDesc(mdsc);
-            List<MethodCallExpr> methodCallExprs = md.findAll(MethodCallExpr.class).stream().collect(Collectors.toList());
-            for (MethodCallExpr mce : methodCallExprs) {
-                //scope 是这个方法的主人，比如a.x(15)，方法是x,参数是15，而主人是a
-                scopeExist = mce.getScope().isPresent();
-                Integer paramCount = mce.getArguments().size();
-                if (scopeExist) {
-                    // 这里的方法签名很难给，需要解析所有参数的类型，那就要扫描本方法内的变量定义，入参方法定义，以及成员变量定义，还有全局变量定义
-                    String rawMethod = mce.getScope().get().toString() + "." + mce.getNameAsString();//TODO 这里要方法签名
-                    mdsc.addCallMethodDescs(rawMethod,paramCount,className,ci,md,mce);
-                } else {
-                    //没有scope说明调用的就是本类内的方法
-                    String rawMethod = "this." + mce.getNameAsString();
-                    mdsc.addCallMethodDescs(rawMethod,paramCount,className,ci,md,mce);
-                }
-            }
+            classDescList.add(cd);
         }
-        return cd;
+        return classDescList;
     }
 }
