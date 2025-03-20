@@ -36,7 +36,7 @@
     </select>
     
     <select id="findByClassNameAndMethodNameAndParamCount" resultMap="methodCall">
-        select * from autopart_method_call c where c.class_name=#{className} and method_name=#{methodName} and method_param_count=#{methodParamCount} and project_name=#{projectName}
+        select * from autopart_method_call c where c.class_name=#{className} and method_name=#{methodName} and method_param_count=#{methodParamCount} and project_name=#{projectName} limit 1
     </select>
 
     <select id="findByCallClassLikeMethodAndProjectName" resultMap="methodCall">
