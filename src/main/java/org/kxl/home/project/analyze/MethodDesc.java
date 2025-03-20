@@ -23,7 +23,7 @@ public class MethodDesc {
     //此方法调用的其他方法
     private List<CallMethodDesc> callMethodDescs;
 
-    public static Set<String> classMethodSet = new TreeSet<>();//这个变量纯粹为了打印
+    public static Map<String,List<String>> classMethodSet = new HashMap<>();//这个变量纯粹为了打印
 
     public MethodDesc(String methodName, Integer paramCount, String paramTypes) {
         this.methodName = methodName;
@@ -49,7 +49,7 @@ public class MethodDesc {
         }catch (Exception e){
             String classMethod = className+"."+md.getNameAsString()+" -> "+mce.getName().getParentNode().toString()+" : "+mce.getRange().toString();
             callMethodDesc.setParamsType("parse err");
-            classMethodSet.add(classMethod);
+            classMethodSet.computeIfAbsent(e.getMessage(), k -> Collections.synchronizedList(new ArrayList<>())).add(classMethod);
         }
         callMethodDescs.add(callMethodDesc);
     }

@@ -156,8 +156,11 @@ public class MethodAnalyze {
         }
 
         if(SHOW_RESOLVE_ERROR) {
-            for (String parserErr : MethodDesc.classMethodSet) {
-                System.out.println("\r\nparser error : " + parserErr);
+            for (Map.Entry<String,List<String>> me: MethodDesc.classMethodSet.entrySet()) {
+                System.out.println("\nparse error reason : "+me.getKey());
+                for(String source : me.getValue()){
+                    System.out.println("\t"+source);
+                }
             }
         }
 
